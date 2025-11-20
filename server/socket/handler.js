@@ -89,15 +89,23 @@ module.exports = (io) => {
                 return;
             }
 
-            if (room.users.length >= room.limit) {
+            if (room.users.length >= room.limit && !room.users.includes(socket.id)) {
                 socket.emit('error', { message: 'Room is full' });
                 return;
             }
 
-            // Add user to room
-            room.users.push(socket.id);
-            socket.join(roomId);
-            userRooms.set(socket.id, { roomId, type: 'group' });
+            // Add user to room if not already there
+            if (!room.users.includes(socket.id)) {
+                room.users.push(socket.id);
+                socket.join(roomId);
+                userRooms.set(socket.id, { roomId, type: 'group' });
+
+                // Notify existing users of new peer ONLY if it's a new join
+                socket.to(roomId).emit('user_joined', { userId: socket.id });
+            } else {
+                // Ensure socket is in the room channel (re-join just in case)
+                socket.join(roomId);
+            }
 
             // Notify user of success and current participants
             socket.emit('room_joined', {
@@ -106,10 +114,7 @@ module.exports = (io) => {
                 admin: room.admin
             });
 
-            // Notify existing users of new peer
-            socket.to(roomId).emit('user_joined', { userId: socket.id });
-
-            console.log(`User ${socket.id} joined room ${roomId}`);
+            console.log(`User ${socket.id} joined/rejoined room ${roomId}`);
         });
 
         socket.on('kick_user', ({ userId }) => {

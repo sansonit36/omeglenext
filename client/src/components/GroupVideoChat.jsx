@@ -39,9 +39,12 @@ const GroupVideoChat = ({ socket, roomId, onLeave }) => {
         };
     }, [roomId, socket]);
 
+    const pendingCandidates = useRef({}); // { [userId]: RTCIceCandidate[] }
+
     // Socket Events
     useEffect(() => {
         socket.on('room_joined', ({ users, admin }) => {
+            console.log('Joined room. Existing users:', users);
             setIsAdmin(socket.id === admin);
             setMessages(prev => [...prev, { type: 'system', text: `Joined room ${roomId}` }]);
 
@@ -52,20 +55,18 @@ const GroupVideoChat = ({ socket, roomId, onLeave }) => {
         });
 
         socket.on('user_joined', ({ userId }) => {
+            console.log('User joined:', userId);
             setMessages(prev => [...prev, { type: 'system', text: 'A user joined the room.' }]);
             // Wait for offer from new user (they are initiator? No, we are existing, they initiate? 
             // Actually, usually the new joiner initiates to existing users or vice versa.
             // Let's stick to: Existing users initiate to new user? Or New user initiates to all?
-            // In 'room_joined', we get a list of users. We can initiate to them.
-            // But here 'user_joined' means someone else joined. They will initiate to us.
-            // So we just wait for signal.
-            // WAIT: In Mesh, usually the new joiner initiates to everyone.
-            // So in 'room_joined', I iterate and create offers.
+            // In 'room_joined', I iterate and create offers.
             // Here in 'user_joined', I just prepare to receive? 
             // Actually, I don't need to do anything here if they initiate.
         });
 
         socket.on('signal', async ({ sender, signal }) => {
+            console.log(`Received signal from ${sender}:`, signal.type);
             let pc = peersRef.current[sender];
 
             if (!pc) {
@@ -75,14 +76,36 @@ const GroupVideoChat = ({ socket, roomId, onLeave }) => {
 
             try {
                 if (signal.type === 'offer') {
+                    if (pc.signalingState !== 'stable') {
+                        console.warn('Received offer in unstable state, ignoring or rolling back');
+                        // Simple collision handling: if we are also initiator (unlikely in this flow), we might need to compare IDs
+                        // For now, assume new joiner always initiates.
+                    }
                     await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
                     const answer = await pc.createAnswer();
                     await pc.setLocalDescription(answer);
                     socket.emit('signal', { target: sender, signal: { type: 'answer', sdp: answer } });
+
+                    // Process queued candidates
+                    if (pendingCandidates.current[sender]) {
+                        for (const candidate of pendingCandidates.current[sender]) {
+                            await pc.addIceCandidate(candidate);
+                        }
+                        delete pendingCandidates.current[sender];
+                    }
                 } else if (signal.type === 'answer') {
                     await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
                 } else if (signal.type === 'candidate') {
-                    await pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
+                    const candidate = new RTCIceCandidate(signal.candidate);
+                    if (pc.remoteDescription) {
+                        await pc.addIceCandidate(candidate);
+                    } else {
+                        console.log('Queueing candidate for', sender);
+                        if (!pendingCandidates.current[sender]) {
+                            pendingCandidates.current[sender] = [];
+                        }
+                        pendingCandidates.current[sender].push(candidate);
+                    }
                 }
             } catch (err) {
                 console.error('Signaling error:', err);
@@ -90,6 +113,7 @@ const GroupVideoChat = ({ socket, roomId, onLeave }) => {
         });
 
         socket.on('user_left', ({ userId }) => {
+            console.log('User left:', userId);
             setMessages(prev => [...prev, { type: 'system', text: 'User left.' }]);
             if (peersRef.current[userId]) {
                 peersRef.current[userId].close();
