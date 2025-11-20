@@ -13,8 +13,8 @@ function App() {
 
   useEffect(() => {
     // Initialize socket connection - use env var for production
-    const socketUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
-    const newSocket = io(socketUrl);
+    console.log('App Version: 1.1.0 (STUN Fix Applied)');
+    const newSocket = io(import.meta.env.VITE_SERVER_URL || 'http://localhost:5000');
     setSocket(newSocket);
 
     return () => {
