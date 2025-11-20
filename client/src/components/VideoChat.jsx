@@ -123,11 +123,14 @@ const VideoChat = ({ socket, onLeave }) => {
         };
 
         pc.onicecandidate = (event) => {
-            if (event.candidate && partnerId) {
+            if (event.candidate && partnerIdRef.current) {
+                console.log('Sending ICE candidate');
                 socket.emit('signal', {
-                    target: partnerId,
+                    target: partnerIdRef.current,
                     signal: { type: 'candidate', candidate: event.candidate }
                 });
+            } else if (event.candidate) {
+                console.warn('Dropped ICE candidate (no partnerId)', event.candidate);
             }
         };
 
@@ -157,7 +160,7 @@ const VideoChat = ({ socket, onLeave }) => {
 
         // Rejoin queue
         socket.emit('join_queue');
-    }, [partnerId, socket]);
+    }, [socket]); // Removed partnerId from dependency, now stable
 
     const partnerIdRef = useRef(null);
 
