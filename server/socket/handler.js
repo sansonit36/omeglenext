@@ -155,6 +155,23 @@ module.exports = (io) => {
             }
         });
 
+        socket.on('find_random_room', () => {
+            // Find a room that is not full
+            let foundRoomId = null;
+            for (const [id, room] of rooms) {
+                if (room.users.length < room.limit) {
+                    foundRoomId = id;
+                    break;
+                }
+            }
+
+            if (foundRoomId) {
+                socket.emit('random_room_found', { roomId: foundRoomId });
+            } else {
+                socket.emit('error', { message: 'No public rooms available. Create one!' });
+            }
+        });
+
         // --- Common Signaling & Cleanup ---
 
         socket.on('signal', (data) => {

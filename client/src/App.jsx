@@ -42,6 +42,18 @@ function App() {
     setInChat(true);
   };
 
+  const handleJoinRandom = () => {
+    socket.emit('find_random_room');
+    socket.once('random_room_found', ({ roomId }) => {
+      setRoomId(roomId);
+      setIsGroupMode(true);
+      setInChat(true);
+    });
+    socket.once('error', ({ message }) => {
+      alert(message);
+    });
+  };
+
   const handleLeave = () => {
     setInChat(false);
     setIsGroupMode(false);
@@ -75,6 +87,7 @@ function App() {
           onEnter={handleEnter}
           onCreateRoom={handleCreateRoom}
           onJoinRoom={handleJoinRoom}
+          onJoinRandom={handleJoinRandom}
         />
       )}
     </>

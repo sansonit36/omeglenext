@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Video, Users, Zap, Globe } from 'lucide-react';
 
-const LandingPage = ({ onEnter, onCreateRoom, onJoinRoom }) => {
+const LandingPage = ({ onEnter, onCreateRoom, onJoinRoom, onJoinRandom }) => {
     const [interest, setInterest] = useState('');
     const [joinRoomId, setJoinRoomId] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -89,13 +89,22 @@ const LandingPage = ({ onEnter, onCreateRoom, onJoinRoom }) => {
                                 <span className="bg-[#0f0f13] px-2 text-gray-500">Or</span>
                             </div>
                         </div>
-                        <button
-                            onClick={() => setShowCreateModal(true)}
-                            className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
-                        >
-                            <Users className="w-4 h-4" />
-                            Create New Room
-                        </button>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={onJoinRandom}
+                                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                            >
+                                <Zap className="w-4 h-4" />
+                                Join Random
+                            </button>
+                            <button
+                                onClick={() => setShowCreateModal(true)}
+                                className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                            >
+                                <Users className="w-4 h-4" />
+                                Create Room
+                            </button>
+                        </div>
                     </div>
                 </div>
 
