@@ -89,7 +89,12 @@ const VideoChat = ({ socket, onLeave }) => {
     };
 
     // Handle next button - defined before useEffect to avoid dependency issues
-    const handleNext = useCallback(() => {
+    const handleNext = useCallback((isSkipping = false) => {
+        // Notify server if we are initiating the skip
+        if (isSkipping) {
+            socket.emit('next');
+        }
+
         // Close peer connection
         if (peerConnectionRef.current) {
             peerConnectionRef.current.close();
@@ -472,7 +477,7 @@ const VideoChat = ({ socket, onLeave }) => {
                         </form>
 
                         <button
-                            onClick={handleNext}
+                            onClick={() => handleNext(true)}
                             disabled={isSearching}
                             className="w-full bg-white text-black font-bold py-2.5 sm:py-3 rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
                         >

@@ -34,9 +34,11 @@ module.exports = (io) => {
                     waitingUsers.push(socket);
                 }
             } else {
-                // No one waiting, add to queue
-                waitingUsers.push(socket);
-                console.log(`User ${socket.id} added to queue`);
+                // No one waiting, add to queue if not already there
+                if (!waitingUsers.some(u => u.id === socket.id)) {
+                    waitingUsers.push(socket);
+                    console.log(`User ${socket.id} added to queue`);
+                }
             }
         });
 
