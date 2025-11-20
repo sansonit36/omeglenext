@@ -217,7 +217,6 @@ const VideoChat = ({ socket, onLeave }) => {
     }, [socket]); // Removed partnerId from dependency, now stable
 
     const chatEndRef = useRef(null);
-    const connectionTimeoutRef = useRef(null);
     const partnerIdRef = useRef(null);
 
     // Sync ref with state
