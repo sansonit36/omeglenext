@@ -1,0 +1,13 @@
+{
+  "name": "omegle-next",
+  "version": "1.0.0",
+  "description": "Omegle-like video chat application",
+  "scripts": {
+    "start:server": "cd server && npm start",
+    "start:client": "cd client && npm run dev",
+    "dev": "concurrently \"npm run start:server\" \"npm run start:client\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
