@@ -229,7 +229,12 @@ const GroupVideoChat = ({ socket, roomId, onLeave }) => {
 
             {/* Video Grid */}
             <div className="flex-1 p-4 overflow-y-auto">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-fr h-full">
+                <div className={`grid gap-4 auto-rows-fr h-full ${(peers.length + 1) <= 1 ? 'grid-cols-1' :
+                        (peers.length + 1) === 2 ? 'grid-cols-1 md:grid-cols-2' :
+                            (peers.length + 1) <= 4 ? 'grid-cols-2' :
+                                (peers.length + 1) <= 6 ? 'grid-cols-2 md:grid-cols-3' :
+                                    'grid-cols-2 md:grid-cols-4'
+                    }`}>
                     {/* Local Video */}
                     <div className="relative bg-black rounded-2xl overflow-hidden border border-white/10 aspect-video">
                         <video
