@@ -10,7 +10,33 @@ const VideoChat = ({ socket, onLeave }) => {
     const [micOn, setMicOn] = useState(true);
     const [cameraOn, setCameraOn] = useState(true);
     const [mediaError, setMediaError] = useState(null);
-    const [facingMode, setFacingMode] = useState('user'); // 'user' or 'environment'
+    const [isVideoLoading, setIsVideoLoading] = useState(false);
+
+    // ... (inside partner_found)
+    // setIsVideoLoading(true);
+
+    // ... (inside video tag)
+    // onCanPlay={() => setIsVideoLoading(false)}
+
+    // ... (render)
+    // {isVideoLoading && <Spinner />}
+
+    // Let's implement this properly in the file content
+
+    // 1. Add state
+    // 2. Update state in partner_found
+    // 3. Update state in handleNext
+    // 4. Add onCanPlay to video
+    // 5. Add UI overlay
+
+    // Since I can't write comments like that in the replacement content, I will do the actual code.
+
+    // I need to do multiple replaces or one big one. 
+    // Let's do one big replace for the VideoChat component body start to add state, 
+    // and then the render part.
+
+    // Actually, I'll just add the state first.
+
 
     const localVideoRef = useRef(null);
     const remoteVideoRef = useRef(null);
@@ -148,6 +174,7 @@ const VideoChat = ({ socket, onLeave }) => {
 
         // Reset state
         setIsSearching(true);
+        setIsVideoLoading(false);
         setMessages([]);
         setPartnerId(null);
         partnerIdRef.current = null; // Clear ref immediately
@@ -241,6 +268,7 @@ const VideoChat = ({ socket, onLeave }) => {
         socket.on('partner_found', async ({ partnerId: pid, initiator }) => {
             setPartnerId(pid);
             partnerIdRef.current = pid; // IMMEDIATE UPDATE: Fix race condition for ICE candidates
+            setIsVideoLoading(true); // Start loading spinner
             console.log('Partner found:', pid, 'Initiator:', initiator);
 
             const pc = peerConnectionRef.current;
@@ -415,17 +443,28 @@ const VideoChat = ({ socket, onLeave }) => {
                                 <p className="text-lg sm:text-xl font-medium text-indigo-400">Looking for someone...</p>
                             </div>
                         ) : (
-                            <video
-                                ref={remoteVideoRef}
-                                autoPlay
-                                playsInline
-                                className="w-full h-full object-cover"
-                            />
+                            <>
+                                {isVideoLoading && (
+                                    <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/80">
+                                        <div className="text-center space-y-2">
+                                            <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto"></div>
+                                            <p className="text-xs font-medium text-white/70">Connecting video...</p>
+                                        </div>
+                                    </div>
+                                )}
+                                <video
+                                    ref={remoteVideoRef}
+                                    autoPlay
+                                    playsInline
+                                    onCanPlay={() => setIsVideoLoading(false)}
+                                    className="w-full h-full object-cover"
+                                />
+                            </>
                         )}
 
                         {/* Status Badge */}
                         {!isSearching && (
-                            <div className="absolute top-4 left-4 px-3 py-1 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-xs font-medium text-white/80">
+                            <div className="absolute top-4 left-4 px-3 py-1 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-xs font-medium text-white/80 z-20">
                                 Stranger
                             </div>
                         )}
