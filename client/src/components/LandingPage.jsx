@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { Video, Users, Zap, Globe } from 'lucide-react';
 
-const LandingPage = ({ onEnter }) => {
+const LandingPage = ({ onEnter, onCreateRoom, onJoinRoom }) => {
     const [interest, setInterest] = useState('');
+    const [joinRoomId, setJoinRoomId] = useState('');
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [roomLimit, setRoomLimit] = useState(5);
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 sm:p-6 md:p-8 relative overflow-hidden">
@@ -33,33 +36,110 @@ const LandingPage = ({ onEnter }) => {
                     </p>
                 </div>
 
-                <div className="glass-panel p-5 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl max-w-md mx-auto space-y-5 sm:space-y-6 transform hover:scale-[1.02] transition-transform duration-300">
-                    <div className="space-y-2 text-left">
-                        <label className="text-xs sm:text-sm font-medium text-gray-300 ml-1">Add your interests (optional)</label>
-                        <input
-                            type="text"
-                            placeholder="coding, music, travel..."
-                            value={interest}
-                            onChange={(e) => setInterest(e.target.value)}
-                            className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 text-sm sm:text-base text-white placeholder-gray-500 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all"
-                        />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                    {/* Random Chat Panel */}
+                    <div className="glass-panel p-5 sm:p-6 rounded-2xl space-y-5 transform hover:scale-[1.02] transition-transform duration-300">
+                        <h2 className="text-xl font-bold text-white">Random Chat</h2>
+                        <div className="space-y-2 text-left">
+                            <label className="text-xs sm:text-sm font-medium text-gray-300 ml-1">Interests (optional)</label>
+                            <input
+                                type="text"
+                                placeholder="coding, music..."
+                                value={interest}
+                                onChange={(e) => setInterest(e.target.value)}
+                                className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:border-indigo-500/50 transition-all"
+                            />
+                        </div>
+                        <button
+                            onClick={onEnter}
+                            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-2"
+                        >
+                            <Video className="w-4 h-4" />
+                            Start Random Chat
+                        </button>
                     </div>
 
-                    <button
-                        onClick={onEnter}
-                        className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3.5 sm:py-4 rounded-xl text-base sm:text-lg shadow-lg shadow-indigo-500/25 transition-all hover:shadow-indigo-500/40 active:scale-[0.98] flex items-center justify-center gap-2"
-                    >
-                        <Video className="w-4 h-4 sm:w-5 sm:h-5" />
-                        Start Video Chat
-                    </button>
-
-                    <div className="pt-3 sm:pt-4 border-t border-white/5 text-xs text-gray-500 flex flex-wrap justify-center gap-3 sm:gap-6">
-                        <span className="flex items-center gap-1"><Users className="w-3 h-3" /> 100% Anonymous</span>
-                        <span className="flex items-center gap-1"><Zap className="w-3 h-3" /> Instant Match</span>
-                        <span className="flex items-center gap-1"><Globe className="w-3 h-3" /> Global</span>
+                    {/* Group Room Panel */}
+                    <div className="glass-panel p-5 sm:p-6 rounded-2xl space-y-5 transform hover:scale-[1.02] transition-transform duration-300">
+                        <h2 className="text-xl font-bold text-white">Group Rooms</h2>
+                        <div className="space-y-2 text-left">
+                            <label className="text-xs sm:text-sm font-medium text-gray-300 ml-1">Join Room ID</label>
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    placeholder="Enter Room ID"
+                                    value={joinRoomId}
+                                    onChange={(e) => setJoinRoomId(e.target.value)}
+                                    className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:border-purple-500/50 transition-all"
+                                />
+                                <button
+                                    onClick={() => onJoinRoom(joinRoomId)}
+                                    disabled={!joinRoomId.trim()}
+                                    className="bg-white/10 hover:bg-white/20 text-white px-4 rounded-xl transition-colors disabled:opacity-50"
+                                >
+                                    Join
+                                </button>
+                            </div>
+                        </div>
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-white/10"></div>
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-[#0f0f13] px-2 text-gray-500">Or</span>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setShowCreateModal(true)}
+                            className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                        >
+                            <Users className="w-4 h-4" />
+                            Create New Room
+                        </button>
                     </div>
                 </div>
+
+                <div className="pt-4 border-t border-white/5 text-xs text-gray-500 flex flex-wrap justify-center gap-3 sm:gap-6">
+                    <span className="flex items-center gap-1"><Users className="w-3 h-3" /> 100% Anonymous</span>
+                    <span className="flex items-center gap-1"><Zap className="w-3 h-3" /> Instant Match</span>
+                    <span className="flex items-center gap-1"><Globe className="w-3 h-3" /> Global</span>
+                </div>
             </div>
+
+            {/* Create Room Modal */}
+            {showCreateModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                    <div className="bg-[#1a1a23] border border-white/10 rounded-2xl p-6 max-w-sm w-full space-y-4 animate-fade-in">
+                        <h3 className="text-xl font-bold text-white">Create Group Room</h3>
+                        <div className="space-y-2">
+                            <label className="text-sm text-gray-300">Max Participants (2-10)</label>
+                            <input
+                                type="number"
+                                min="2"
+                                max="10"
+                                value={roomLimit}
+                                onChange={(e) => setRoomLimit(e.target.value)}
+                                className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-white focus:border-indigo-500/50"
+                            />
+                            <p className="text-xs text-gray-500">Recommended: 4-5 users for best performance.</p>
+                        </div>
+                        <div className="flex gap-3 pt-2">
+                            <button
+                                onClick={() => setShowCreateModal(false)}
+                                className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => onCreateRoom(roomLimit)}
+                                className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-colors"
+                            >
+                                Create
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

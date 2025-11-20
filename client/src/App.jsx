@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import LandingPage from './components/LandingPage';
 import VideoChat from './components/VideoChat';
+import GroupVideoChat from './components/GroupVideoChat';
 import './index.css';
 
 function App() {
   const [inChat, setInChat] = useState(false);
+  const [isGroupMode, setIsGroupMode] = useState(false);
+  const [roomId, setRoomId] = useState(null);
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
@@ -21,10 +24,31 @@ function App() {
 
   const handleEnter = () => {
     setInChat(true);
+    setIsGroupMode(false);
+  };
+
+  const handleCreateRoom = (limit) => {
+    socket.emit('create_room', { limit });
+    socket.once('room_created', ({ roomId }) => {
+      setRoomId(roomId);
+      setIsGroupMode(true);
+      setInChat(true);
+    });
+  };
+
+  const handleJoinRoom = (id) => {
+    setRoomId(id);
+    setIsGroupMode(true);
+    setInChat(true);
   };
 
   const handleLeave = () => {
     setInChat(false);
+    setIsGroupMode(false);
+    setRoomId(null);
+    if (isGroupMode) {
+      socket.emit('leave_room'); // Ensure cleanup
+    }
   };
 
   if (!socket) {
@@ -41,9 +65,17 @@ function App() {
   return (
     <>
       {inChat ? (
-        <VideoChat socket={socket} onLeave={handleLeave} />
+        isGroupMode ? (
+          <GroupVideoChat socket={socket} roomId={roomId} onLeave={handleLeave} />
+        ) : (
+          <VideoChat socket={socket} onLeave={handleLeave} />
+        )
       ) : (
-        <LandingPage onEnter={handleEnter} />
+        <LandingPage
+          onEnter={handleEnter}
+          onCreateRoom={handleCreateRoom}
+          onJoinRoom={handleJoinRoom}
+        />
       )}
     </>
   );
