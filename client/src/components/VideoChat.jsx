@@ -227,17 +227,33 @@ const VideoChat = ({ socket, onLeave }) => {
 
         socket.on('signal', async ({ sender, signal }) => {
             const pc = peerConnectionRef.current;
-            if (!pc) return;
+            if (!pc || pc.signalingState === 'closed') return;
 
-            if (signal.type === 'offer') {
-                await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
-                const answer = await pc.createAnswer();
-                await pc.setLocalDescription(answer);
-                socket.emit('signal', { target: sender, signal: { type: 'answer', sdp: answer } });
-            } else if (signal.type === 'answer') {
-                await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
-            } else if (signal.type === 'candidate') {
-                await pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
+            try {
+                if (signal.type === 'offer') {
+                    if (pc.signalingState !== 'stable') {
+                        // If we are not stable, we might be in a glare or race. 
+                        // For simplicity in this random chat, we might just ignore or reset.
+                        // But usually, we just proceed if we are the answerer.
+                        // However, if we already have a remote desc, this might be a renegotiation.
+                    }
+                    await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+                    if (pc.signalingState === 'closed') return; // Check again after await
+
+                    const answer = await pc.createAnswer();
+                    await pc.setLocalDescription(answer);
+                    socket.emit('signal', { target: sender, signal: { type: 'answer', sdp: answer } });
+                } else if (signal.type === 'answer') {
+                    if (pc.signalingState === 'have-local-offer') {
+                        await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+                    }
+                } else if (signal.type === 'candidate') {
+                    if (pc.remoteDescription && pc.signalingState !== 'closed') {
+                        await pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
+                    }
+                }
+            } catch (err) {
+                console.error('Signaling error:', err);
             }
         });
 
