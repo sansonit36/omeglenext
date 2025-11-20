@@ -153,6 +153,13 @@ const VideoChat = ({ socket, onLeave }) => {
         socket.emit('join_queue');
     }, [partnerId, socket]);
 
+    const partnerIdRef = useRef(null);
+
+    // Sync ref with state
+    useEffect(() => {
+        partnerIdRef.current = partnerId;
+    }, [partnerId]);
+
     // Initialize WebRTC and Socket listeners
     useEffect(() => {
         // Request media permissions
@@ -185,9 +192,9 @@ const VideoChat = ({ socket, onLeave }) => {
                 };
 
                 pc.onicecandidate = (event) => {
-                    if (event.candidate && partnerId) {
+                    if (event.candidate && partnerIdRef.current) {
                         socket.emit('signal', {
-                            target: partnerId,
+                            target: partnerIdRef.current,
                             signal: { type: 'candidate', candidate: event.candidate }
                         });
                     }
@@ -221,13 +228,13 @@ const VideoChat = ({ socket, onLeave }) => {
 
         socket.on('partner_found', async ({ partnerId: pid, initiator }) => {
             setPartnerId(pid);
+            // partnerIdRef will be updated by the other useEffect, but we can use pid directly here
             const pc = peerConnectionRef.current;
 
             if (initiator) {
                 if (!pc || pc.signalingState === 'closed') return;
                 try {
                     const offer = await pc.createOffer();
-                    // Check again after await
                     if (pc.signalingState === 'closed') return;
 
                     await pc.setLocalDescription(offer);
@@ -239,19 +246,24 @@ const VideoChat = ({ socket, onLeave }) => {
         });
 
         socket.on('signal', async ({ sender, signal }) => {
+            // Validate sender is current partner
+            if (sender !== partnerIdRef.current) {
+                console.warn('Received signal from unknown/old partner:', sender);
+                return;
+            }
+
             const pc = peerConnectionRef.current;
             if (!pc || pc.signalingState === 'closed') return;
 
             try {
                 if (signal.type === 'offer') {
                     if (pc.signalingState !== 'stable') {
-                        // If we are not stable, we might be in a glare or race. 
-                        // For simplicity in this random chat, we might just ignore or reset.
-                        // But usually, we just proceed if we are the answerer.
-                        // However, if we already have a remote desc, this might be a renegotiation.
+                        // Glare handling: if we are polite, we might rollback. 
+                        // For now, just log it.
+                        console.warn('Received offer in non-stable state');
                     }
                     await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
-                    if (pc.signalingState === 'closed') return; // Check again after await
+                    if (pc.signalingState === 'closed') return;
 
                     const answer = await pc.createAnswer();
                     await pc.setLocalDescription(answer);
@@ -282,11 +294,10 @@ const VideoChat = ({ socket, onLeave }) => {
         });
 
         return () => {
-            // Cleanup
+            // Cleanup only on unmount or if socket/handleNext changes (which should be rare)
             if (peerConnectionRef.current) {
                 peerConnectionRef.current.close();
             }
-            // Stop tracks
             if (localStreamRef.current) {
                 localStreamRef.current.getTracks().forEach(track => track.stop());
             }
@@ -296,7 +307,7 @@ const VideoChat = ({ socket, onLeave }) => {
             socket.off('message');
             socket.off('partner_disconnected');
         };
-    }, [socket, partnerId, handleNext]); // Removed facingMode from dependency to prevent full re-init on switch
+    }, [socket, handleNext]); // Removed partnerId from dependency
 
     // Handle sending messages
     const sendMessage = (e) => {
