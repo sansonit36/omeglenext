@@ -142,6 +142,7 @@ const VideoChat = ({ socket, onLeave }) => {
         setIsSearching(true);
         setMessages([]);
         setPartnerId(null);
+        partnerIdRef.current = null; // Clear ref immediately
         setRoomId(null);
 
         // Clear remote video
@@ -193,10 +194,13 @@ const VideoChat = ({ socket, onLeave }) => {
 
                 pc.onicecandidate = (event) => {
                     if (event.candidate && partnerIdRef.current) {
+                        console.log('Sending ICE candidate');
                         socket.emit('signal', {
                             target: partnerIdRef.current,
                             signal: { type: 'candidate', candidate: event.candidate }
                         });
+                    } else if (event.candidate) {
+                        console.warn('Dropped ICE candidate (no partnerId)', event.candidate);
                     }
                 };
 
@@ -228,7 +232,9 @@ const VideoChat = ({ socket, onLeave }) => {
 
         socket.on('partner_found', async ({ partnerId: pid, initiator }) => {
             setPartnerId(pid);
-            // partnerIdRef will be updated by the other useEffect, but we can use pid directly here
+            partnerIdRef.current = pid; // IMMEDIATE UPDATE: Fix race condition for ICE candidates
+            console.log('Partner found:', pid, 'Initiator:', initiator);
+
             const pc = peerConnectionRef.current;
 
             if (initiator) {
