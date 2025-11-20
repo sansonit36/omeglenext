@@ -126,6 +126,13 @@ const VideoChat = ({ socket, onLeave }) => {
             }
         };
 
+        pc.oniceconnectionstatechange = () => {
+            console.log('ICE Connection State:', pc.iceConnectionState);
+            if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+                setMessages(prev => [...prev, { type: 'system', text: `Connection issue: ${pc.iceConnectionState}. Try refreshing.` }]);
+            }
+        };
+
         peerConnectionRef.current = pc;
 
         // Reset state
@@ -180,6 +187,13 @@ const VideoChat = ({ socket, onLeave }) => {
                             target: partnerId,
                             signal: { type: 'candidate', candidate: event.candidate }
                         });
+                    }
+                };
+
+                pc.oniceconnectionstatechange = () => {
+                    console.log('ICE Connection State:', pc.iceConnectionState);
+                    if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+                        setMessages(prev => [...prev, { type: 'system', text: `Connection issue: ${pc.iceConnectionState}. Try refreshing.` }]);
                     }
                 };
 
@@ -338,9 +352,9 @@ const VideoChat = ({ socket, onLeave }) => {
 
             <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
                 {/* Video Area */}
-                <div className="flex-1 flex flex-col md:flex-row relative bg-black">
-                    {/* Stranger's Video - Top half on mobile, Left half on desktop */}
-                    <div className="h-1/2 md:h-full md:flex-1 relative bg-black flex items-center justify-center border-b md:border-b-0 md:border-r border-white/10">
+                <div className="flex-1 flex flex-col md:flex-row relative bg-black overflow-hidden">
+                    {/* Stranger's Video - Top half (50%) on mobile, Left half (50%) on desktop */}
+                    <div className="h-[50%] md:h-full w-full md:w-[50%] relative bg-black flex items-center justify-center border-b md:border-b-0 md:border-r border-white/10">
                         {isSearching ? (
                             <div className="text-center space-y-3 sm:space-y-4 animate-pulse px-4">
                                 <div className="w-16 h-16 sm:w-20 sm:h-20 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
@@ -363,8 +377,8 @@ const VideoChat = ({ socket, onLeave }) => {
                         )}
                     </div>
 
-                    {/* Local Video - Bottom half on mobile, Right half on desktop */}
-                    <div className="h-1/2 md:h-full md:flex-1 relative bg-gray-900">
+                    {/* Local Video - Bottom half (50%) on mobile, Right half (50%) on desktop */}
+                    <div className="h-[50%] md:h-full w-full md:w-[50%] relative bg-gray-900">
                         <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
 
                         {/* Status Badge */}
