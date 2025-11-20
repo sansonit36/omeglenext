@@ -41,10 +41,28 @@ const GroupVideoChat = ({ socket, roomId, onLeave }) => {
 
     const pendingCandidates = useRef({}); // { [userId]: RTCIceCandidate[] }
 
+    // Toggle Mic
+    useEffect(() => {
+        if (localStreamRef.current) {
+            localStreamRef.current.getAudioTracks().forEach(track => {
+                track.enabled = micOn;
+            });
+        }
+    }, [micOn]);
+
+    // Toggle Camera
+    useEffect(() => {
+        if (localStreamRef.current) {
+            localStreamRef.current.getVideoTracks().forEach(track => {
+                track.enabled = cameraOn;
+            });
+        }
+    }, [cameraOn]);
+
     // Socket Events
     useEffect(() => {
         socket.on('room_joined', ({ users, admin }) => {
-            console.log('Joined room. Existing users:', users);
+            console.log('Joined room. Existing users:', users, 'Admin:', admin, 'My ID:', socket.id);
             setIsAdmin(socket.id === admin);
             setMessages(prev => [...prev, { type: 'system', text: `Joined room ${roomId}` }]);
 
@@ -230,10 +248,10 @@ const GroupVideoChat = ({ socket, roomId, onLeave }) => {
             {/* Video Grid */}
             <div className="flex-1 p-4 overflow-y-auto">
                 <div className={`grid gap-4 auto-rows-fr h-full ${(peers.length + 1) <= 1 ? 'grid-cols-1' :
-                        (peers.length + 1) === 2 ? 'grid-cols-1 md:grid-cols-2' :
-                            (peers.length + 1) <= 4 ? 'grid-cols-2' :
-                                (peers.length + 1) <= 6 ? 'grid-cols-2 md:grid-cols-3' :
-                                    'grid-cols-2 md:grid-cols-4'
+                    (peers.length + 1) === 2 ? 'grid-cols-1 md:grid-cols-2' :
+                        (peers.length + 1) <= 4 ? 'grid-cols-2' :
+                            (peers.length + 1) <= 6 ? 'grid-cols-2 md:grid-cols-3' :
+                                'grid-cols-2 md:grid-cols-4'
                     }`}>
                     {/* Local Video */}
                     <div className="relative bg-black rounded-2xl overflow-hidden border border-white/10 aspect-video">
