@@ -339,8 +339,8 @@ const VideoChat = ({ socket, onLeave }) => {
             <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
                 {/* Video Area */}
                 <div className="flex-1 flex flex-col md:flex-row relative bg-black">
-                    {/* Stranger's Video - Full on mobile, main on desktop */}
-                    <div className="flex-1 relative bg-black flex items-center justify-center h-full">
+                    {/* Stranger's Video - Top half on mobile, Main on desktop */}
+                    <div className="h-1/2 md:h-full md:flex-1 relative bg-black flex items-center justify-center border-b md:border-b-0 md:border-r border-white/10">
                         {isSearching ? (
                             <div className="text-center space-y-3 sm:space-y-4 animate-pulse px-4">
                                 <div className="w-16 h-16 sm:w-20 sm:h-20 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
@@ -351,14 +351,24 @@ const VideoChat = ({ socket, onLeave }) => {
                                 ref={remoteVideoRef}
                                 autoPlay
                                 playsInline
-                                className="w-full h-full object-contain"
+                                className="w-full h-full object-cover md:object-contain"
                             />
                         )}
+
+                        {/* Status Badge */}
+                        <div className="absolute top-4 left-4 px-3 py-1 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-xs font-medium text-white/80">
+                            Stranger
+                        </div>
                     </div>
 
-                    {/* Local Video - PIP on mobile (top-right), PIP on desktop (bottom-right) */}
-                    <div className="absolute top-4 right-4 w-32 h-48 md:bottom-6 md:right-6 md:top-auto md:w-48 md:h-36 bg-gray-900 rounded-xl overflow-hidden border-2 border-white/10 shadow-2xl z-10 transition-all duration-300 hover:scale-105">
+                    {/* Local Video - Bottom half on mobile, PIP on desktop */}
+                    <div className="h-1/2 md:absolute md:bottom-6 md:right-6 md:w-48 md:h-36 md:h-auto md:bg-gray-900 md:rounded-xl md:overflow-hidden md:border-2 md:border-white/10 md:shadow-2xl md:z-10 md:transition-all md:duration-300 md:hover:scale-105 relative bg-gray-900">
                         <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+
+                        {/* Status Badge */}
+                        <div className="absolute top-4 left-4 px-3 py-1 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-xs font-medium text-white/80 md:hidden">
+                            You
+                        </div>
                     </div>
                 </div>
 
