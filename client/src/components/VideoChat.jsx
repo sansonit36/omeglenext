@@ -197,7 +197,7 @@ const VideoChat = ({ socket, onLeave }) => {
         socket.on('paired', ({ roomId: rid }) => {
             setRoomId(rid);
             setIsSearching(false);
-            setMessages([{ type: 'system', text: 'You are now connected with a stranger. Say hi!' }]);
+            setMessages([{ type: 'system', text: 'Paired with a stranger. Establishing video connection...' }]);
         });
 
         socket.on('partner_found', async ({ partnerId: pid, initiator }) => {
@@ -339,7 +339,7 @@ const VideoChat = ({ socket, onLeave }) => {
             <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
                 {/* Video Area */}
                 <div className="flex-1 flex flex-col md:flex-row relative bg-black">
-                    {/* Stranger's Video - Top half on mobile, Main on desktop */}
+                    {/* Stranger's Video - Top half on mobile, Left half on desktop */}
                     <div className="h-1/2 md:h-full md:flex-1 relative bg-black flex items-center justify-center border-b md:border-b-0 md:border-r border-white/10">
                         {isSearching ? (
                             <div className="text-center space-y-3 sm:space-y-4 animate-pulse px-4">
@@ -351,22 +351,24 @@ const VideoChat = ({ socket, onLeave }) => {
                                 ref={remoteVideoRef}
                                 autoPlay
                                 playsInline
-                                className="w-full h-full object-cover md:object-contain"
+                                className="w-full h-full object-cover"
                             />
                         )}
 
                         {/* Status Badge */}
-                        <div className="absolute top-4 left-4 px-3 py-1 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-xs font-medium text-white/80">
-                            Stranger
-                        </div>
+                        {!isSearching && (
+                            <div className="absolute top-4 left-4 px-3 py-1 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-xs font-medium text-white/80">
+                                Stranger
+                            </div>
+                        )}
                     </div>
 
-                    {/* Local Video - Bottom half on mobile, PIP on desktop */}
-                    <div className="h-1/2 md:absolute md:bottom-6 md:right-6 md:w-48 md:h-36 md:h-auto md:bg-gray-900 md:rounded-xl md:overflow-hidden md:border-2 md:border-white/10 md:shadow-2xl md:z-10 md:transition-all md:duration-300 md:hover:scale-105 relative bg-gray-900">
+                    {/* Local Video - Bottom half on mobile, Right half on desktop */}
+                    <div className="h-1/2 md:h-full md:flex-1 relative bg-gray-900">
                         <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
 
                         {/* Status Badge */}
-                        <div className="absolute top-4 left-4 px-3 py-1 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-xs font-medium text-white/80 md:hidden">
+                        <div className="absolute top-4 left-4 px-3 py-1 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-xs font-medium text-white/80">
                             You
                         </div>
                     </div>
