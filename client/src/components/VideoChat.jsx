@@ -10,6 +10,7 @@ const VideoChat = ({ socket, onLeave }) => {
     const [micOn, setMicOn] = useState(true);
     const [cameraOn, setCameraOn] = useState(true);
     const [mediaError, setMediaError] = useState(null);
+    const [facingMode, setFacingMode] = useState('user'); // 'user' or 'environment'
     const [isVideoLoading, setIsVideoLoading] = useState(false);
 
     // ... (inside partner_found)
