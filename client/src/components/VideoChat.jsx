@@ -43,7 +43,30 @@ const VideoChat = ({ socket, onLeave }) => {
     const remoteVideoRef = useRef(null);
     const peerConnectionRef = useRef(null);
     const localStreamRef = useRef(null);
-    const chatEndRef = useRef(null);
+    const connectionTimeoutRef = useRef(null);
+
+    // ... inside partner_found ...
+    // Clear any existing timeout
+    if (connectionTimeoutRef.current) clearTimeout(connectionTimeoutRef.current);
+
+    // Set new timeout
+    connectionTimeoutRef.current = setTimeout(() => {
+        if (isVideoLoading) {
+            setIsVideoLoading(false);
+            setMessages(prev => [...prev, { type: 'system', text: 'Connection timed out. Firewalls might be blocking the video. Try "Next Stranger".' }]);
+        }
+    }, 15000); // 15 seconds
+
+    // ... inside onCanPlay ...
+    // clearTimeout(connectionTimeoutRef.current);
+
+    // ... inside handleNext ...
+    // clearTimeout(connectionTimeoutRef.current);
+
+    // I will implement this by modifying the specific blocks.
+
+    // First, let's add the ref and modify handleNext to clear it.
+
 
     // Scroll to bottom of chat
     useEffect(() => {
@@ -122,6 +145,9 @@ const VideoChat = ({ socket, onLeave }) => {
             socket.emit('next');
         }
 
+        // Clear connection timeout
+        if (connectionTimeoutRef.current) clearTimeout(connectionTimeoutRef.current);
+
         // Close peer connection
         if (peerConnectionRef.current) {
             peerConnectionRef.current.close();
@@ -190,6 +216,8 @@ const VideoChat = ({ socket, onLeave }) => {
         socket.emit('join_queue');
     }, [socket]); // Removed partnerId from dependency, now stable
 
+    const chatEndRef = useRef(null);
+    const connectionTimeoutRef = useRef(null);
     const partnerIdRef = useRef(null);
 
     // Sync ref with state
@@ -223,6 +251,7 @@ const VideoChat = ({ socket, onLeave }) => {
                 stream.getTracks().forEach(track => pc.addTrack(track, stream));
 
                 pc.ontrack = (event) => {
+                    console.log('Received remote track:', event.streams[0].id);
                     if (remoteVideoRef.current) {
                         remoteVideoRef.current.srcObject = event.streams[0];
                     }
@@ -271,6 +300,18 @@ const VideoChat = ({ socket, onLeave }) => {
             partnerIdRef.current = pid; // IMMEDIATE UPDATE: Fix race condition for ICE candidates
             setIsVideoLoading(true); // Start loading spinner
             console.log('Partner found:', pid, 'Initiator:', initiator);
+
+            // Set connection timeout
+            if (connectionTimeoutRef.current) clearTimeout(connectionTimeoutRef.current);
+            connectionTimeoutRef.current = setTimeout(() => {
+                setIsVideoLoading(prev => {
+                    if (prev) {
+                        setMessages(m => [...m, { type: 'system', text: 'Connection timed out. Firewalls might be blocking the video. Try "Next Stranger".' }]);
+                        return false;
+                    }
+                    return prev;
+                });
+            }, 15000);
 
             const pc = peerConnectionRef.current;
 
@@ -457,7 +498,10 @@ const VideoChat = ({ socket, onLeave }) => {
                                     ref={remoteVideoRef}
                                     autoPlay
                                     playsInline
-                                    onCanPlay={() => setIsVideoLoading(false)}
+                                    onCanPlay={() => {
+                                        setIsVideoLoading(false);
+                                        if (connectionTimeoutRef.current) clearTimeout(connectionTimeoutRef.current);
+                                    }}
                                     className="w-full h-full object-cover"
                                 />
                             </>
