@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Video, VideoOff, PhoneOff, Users, Shield, Ban, VolumeX, Volume2, Copy } from 'lucide-react';
+import { Mic, MicOff, Video, VideoOff, PhoneOff, Users, Shield, Ban, VolumeX, Volume2, Copy, Gamepad2 } from 'lucide-react';
+import GameMenu from './GameMenu';
+import TicTacToe from './games/TicTacToe';
 
 const GroupVideoChat = ({ socket, roomId, onLeave }) => {
     const [peers, setPeers] = useState([]); // Array of { userId, stream, isMuted }
@@ -9,6 +11,12 @@ const GroupVideoChat = ({ socket, roomId, onLeave }) => {
     const [isAdmin, setIsAdmin] = useState(false);
     const [messages, setMessages] = useState([]);
     const [message, setMessage] = useState('');
+
+    // Game State
+    const [gameMenuOpen, setGameMenuOpen] = useState(false);
+    const [activeGame, setActiveGame] = useState(null);
+    const [gameInvite, setGameInvite] = useState(null);
+    const [targetGameUser, setTargetGameUser] = useState(null);
 
     const localVideoRef = useRef(null);
     const peersRef = useRef({}); // { [userId]: RTCPeerConnection }
@@ -165,6 +173,32 @@ const GroupVideoChat = ({ socket, roomId, onLeave }) => {
             }
         });
 
+        // --- Game Events ---
+        socket.on('game_invite', ({ inviterId, gameType }) => {
+            setGameInvite({ inviterId, gameType });
+        });
+
+        socket.on('game_start', ({ gameId, gameType, players, turn }) => {
+            setActiveGame({ id: gameId, type: gameType, players, turn, board: Array(9).fill(null), status: 'playing' });
+            setGameInvite(null);
+            setGameMenuOpen(false);
+            setTargetGameUser(null);
+        });
+
+        socket.on('game_update', ({ board, turn, status, winner }) => {
+            setActiveGame(prev => prev ? { ...prev, board, turn, status, winner } : null);
+        });
+
+        socket.on('game_ended', ({ reason }) => {
+            setActiveGame(null);
+            alert('Game ended: ' + reason);
+        });
+
+        socket.on('game_rejected', () => {
+            alert('Game invite rejected.');
+            setTargetGameUser(null);
+        });
+
         return () => {
             socket.off('room_joined');
             socket.off('user_joined');
@@ -173,6 +207,11 @@ const GroupVideoChat = ({ socket, roomId, onLeave }) => {
             socket.off('kicked');
             socket.off('user_muted');
             socket.off('new_admin');
+            socket.off('game_invite');
+            socket.off('game_start');
+            socket.off('game_update');
+            socket.off('game_ended');
+            socket.off('game_rejected');
         };
     }, [socket, roomId, onLeave]);
 
@@ -235,10 +274,91 @@ const GroupVideoChat = ({ socket, roomId, onLeave }) => {
         });
     };
 
+    // Game Actions
+    const handleInviteGame = (gameType) => {
+        if (targetGameUser) {
+            socket.emit('game_invite', { targetId: targetGameUser, gameType });
+            setGameMenuOpen(false);
+            alert(`Invited user to play ${gameType}...`);
+        }
+    };
+
+    const handleAcceptGame = () => {
+        if (gameInvite) {
+            socket.emit('game_accept', { inviterId: gameInvite.inviterId, gameType: gameInvite.gameType });
+            setGameInvite(null);
+        }
+    };
+
+    const handleRejectGame = () => {
+        if (gameInvite) {
+            socket.emit('game_reject', { inviterId: gameInvite.inviterId });
+            setGameInvite(null);
+        }
+    };
+
+    const handleGameMove = (index) => {
+        if (activeGame) {
+            socket.emit('game_move', { gameId: activeGame.id, index });
+        }
+    };
+
+    const handleCloseGame = () => {
+        if (activeGame) {
+            socket.emit('game_leave', { gameId: activeGame.id });
+            setActiveGame(null);
+        }
+    };
+
     const [activePeerId, setActivePeerId] = useState(null);
 
     return (
-        <div className="h-screen flex flex-col bg-[#0f0f13] text-white">
+        <div className="h-screen flex flex-col bg-[#0f0f13] text-white relative">
+            {/* Game Invite Modal */}
+            {gameInvite && (
+                <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 bg-[#1a1a23] border border-indigo-500/50 p-4 rounded-xl shadow-2xl animate-in slide-in-from-top-5 fade-in duration-300">
+                    <div className="text-white font-bold mb-3 text-center">
+                        User wants to play <span className="text-indigo-400">{gameInvite.gameType}</span>!
+                    </div>
+                    <div className="flex gap-3 justify-center">
+                        <button onClick={handleAcceptGame} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold transition-colors">
+                            Accept
+                        </button>
+                        <button onClick={handleRejectGame} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition-colors">
+                            Decline
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Game Menu */}
+            {gameMenuOpen && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-[#1a1a23] p-6 rounded-2xl border border-white/10 shadow-2xl max-w-md w-full relative">
+                        <button
+                            onClick={() => setGameMenuOpen(false)}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                        >
+                            <VolumeX size={20} className="rotate-45" /> {/* Close Icon hack using VolumeX rotated, or just use text */}
+                        </button>
+                        <GameMenu onSelectGame={handleInviteGame} onClose={() => setGameMenuOpen(false)} />
+                    </div>
+                </div>
+            )}
+
+            {/* Active Game Overlay */}
+            {activeGame && activeGame.type === 'tictactoe' && (
+                <TicTacToe
+                    board={activeGame.board}
+                    turn={activeGame.turn}
+                    myId={socket.id}
+                    onMove={handleGameMove}
+                    status={activeGame.status}
+                    winner={activeGame.winner}
+                    onClose={handleCloseGame}
+                />
+            )}
+
             {/* Header */}
             <header className="h-16 border-b border-white/10 flex items-center justify-between px-6 bg-[#1a1a23] z-50">
                 <div className="flex items-center gap-4">
@@ -323,32 +443,46 @@ const GroupVideoChat = ({ socket, roomId, onLeave }) => {
                                 {peer.isMuted && <VolumeX size={12} className="text-red-500" />}
                             </div>
 
-                            {/* Admin Controls */}
-                            {isAdmin && (
-                                <div className={`absolute top-3 right-3 flex gap-2 z-20 transition-opacity duration-300 ${activePeerId === peer.userId ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                                    }`}>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation(); // Prevent toggling the container
-                                            handleMute(peer.userId, peer.isMuted);
-                                        }}
-                                        className={`p-2 rounded-full ${peer.isMuted ? 'bg-red-500 text-white' : 'bg-gray-800/80 hover:bg-gray-700'}`}
-                                        title={peer.isMuted ? "Unmute User" : "Mute User"}
-                                    >
-                                        {peer.isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                                    </button>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleKick(peer.userId);
-                                        }}
-                                        className="p-2 rounded-full bg-red-500/80 hover:bg-red-600 text-white"
-                                        title="Kick User"
-                                    >
-                                        <Ban size={14} />
-                                    </button>
-                                </div>
-                            )}
+                            <div className={`absolute top-3 right-3 flex gap-2 z-20 transition-opacity duration-300 ${activePeerId === peer.userId ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                                {/* Game Invite Button - Visible to everyone */}
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setTargetGameUser(peer.userId);
+                                        setGameMenuOpen(true);
+                                    }}
+                                    className="p-2 rounded-full bg-indigo-600/80 hover:bg-indigo-500 text-white"
+                                    title="Play Game"
+                                >
+                                    <Gamepad2 size={14} />
+                                </button>
+
+                                {/* Admin Controls */}
+                                {isAdmin && (
+                                    <>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation(); // Prevent toggling the container
+                                                handleMute(peer.userId, peer.isMuted);
+                                            }}
+                                            className={`p-2 rounded-full ${peer.isMuted ? 'bg-red-500 text-white' : 'bg-gray-800/80 hover:bg-gray-700'}`}
+                                            title={peer.isMuted ? "Unmute User" : "Mute User"}
+                                        >
+                                            {peer.isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleKick(peer.userId);
+                                            }}
+                                            className="p-2 rounded-full bg-red-500/80 hover:bg-red-600 text-white"
+                                            title="Kick User"
+                                        >
+                                            <Ban size={14} />
+                                        </button>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     ))}
                 </div>

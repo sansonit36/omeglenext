@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Send, Mic, MicOff, Video, VideoOff, SkipForward, MessageSquare, RefreshCw } from 'lucide-react';
+import { Send, Mic, MicOff, Video, VideoOff, SkipForward, MessageSquare, RefreshCw, Gamepad2 } from 'lucide-react';
+import GameMenu from './GameMenu';
+import TicTacToe from './games/TicTacToe';
 
 const VideoChat = ({ socket, onLeave }) => {
     const [message, setMessage] = useState('');
@@ -12,6 +14,11 @@ const VideoChat = ({ socket, onLeave }) => {
     const [mediaError, setMediaError] = useState(null);
     const [facingMode, setFacingMode] = useState('user'); // 'user' or 'environment'
     const [isVideoLoading, setIsVideoLoading] = useState(false);
+
+    // Game State
+    const [gameMenuOpen, setGameMenuOpen] = useState(false);
+    const [activeGame, setActiveGame] = useState(null); // { id, type, board, turn, status, winner }
+    const [gameInvite, setGameInvite] = useState(null); // { inviterId, gameType }
 
     // ... (inside partner_found)
     // setIsVideoLoading(true);
