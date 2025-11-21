@@ -472,7 +472,7 @@ const VideoChat = ({ socket, onLeave }) => {
             <header className="h-14 sm:h-16 border-b border-white/10 flex items-center justify-between px-3 sm:px-6 bg-[#1a1a23] z-50 relative">
                 <div className="flex items-center gap-1.5 sm:gap-2">
                     <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-500 animate-pulse"></div>
-                    <span className="font-bold text-base sm:text-lg tracking-tight">Omegle<span className="text-indigo-500">Next</span></span>
+                    <span className="font-bold text-base sm:text-lg tracking-tight">Zingle</span>
                 </div>
                 <div className="flex items-center gap-2 sm:gap-4">
                     <button onClick={switchCamera} className="p-2 sm:p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all text-white">
