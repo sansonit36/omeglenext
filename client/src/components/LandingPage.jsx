@@ -75,7 +75,7 @@ const LandingPage = ({ onEnter, onCreateRoom, onJoinRoom, onJoinRandom }) => {
                                 <button
                                     onClick={() => onJoinRoom(joinRoomId)}
                                     disabled={!joinRoomId.trim()}
-                                    className="bg-white/10 hover:bg-white/20 text-white px-4 rounded-xl transition-colors disabled:opacity-50"
+                                    className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-4 rounded-xl transition-colors disabled:opacity-50"
                                 >
                                     Join
                                 </button>
@@ -99,7 +99,7 @@ const LandingPage = ({ onEnter, onCreateRoom, onJoinRoom, onJoinRandom }) => {
                             </button>
                             <button
                                 onClick={() => setShowCreateModal(true)}
-                                className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                                className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
                             >
                                 <Users className="w-4 h-4" />
                                 Create Room
