@@ -235,6 +235,8 @@ const GroupVideoChat = ({ socket, roomId, onLeave }) => {
         });
     };
 
+    const [activePeerId, setActivePeerId] = useState(null);
+
     return (
         <div className="h-screen flex flex-col bg-[#0f0f13] text-white">
             {/* Header */}
@@ -291,7 +293,7 @@ const GroupVideoChat = ({ socket, roomId, onLeave }) => {
                             className="w-full h-full object-cover"
                         />
                         <div className="absolute bottom-3 left-3 bg-black/60 px-2 py-1 rounded text-xs font-medium z-20">You</div>
-                        <div className="absolute top-3 right-3 flex gap-2 z-20 opacity-100 transition-opacity">
+                        <div className="absolute top-3 right-3 flex gap-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                             <button onClick={() => setMicOn(!micOn)} className={`p-2 rounded-full ${micOn ? 'bg-gray-800/80 hover:bg-gray-700' : 'bg-red-500 text-white'}`}>
                                 {micOn ? <Mic size={14} /> : <MicOff size={14} />}
                             </button>
@@ -303,7 +305,11 @@ const GroupVideoChat = ({ socket, roomId, onLeave }) => {
 
                     {/* Remote Peers */}
                     {peers.map(peer => (
-                        <div key={peer.userId} className="relative bg-black rounded-2xl overflow-hidden border border-white/10 aspect-video group">
+                        <div
+                            key={peer.userId}
+                            className="relative bg-black rounded-2xl overflow-hidden border border-white/10 aspect-video group cursor-pointer"
+                            onClick={() => setActivePeerId(prev => prev === peer.userId ? null : peer.userId)}
+                        >
                             <video
                                 autoPlay
                                 playsInline
@@ -319,16 +325,23 @@ const GroupVideoChat = ({ socket, roomId, onLeave }) => {
 
                             {/* Admin Controls */}
                             {isAdmin && (
-                                <div className="absolute top-3 right-3 flex gap-2 z-20 opacity-100 transition-opacity">
+                                <div className={`absolute top-3 right-3 flex gap-2 z-20 transition-opacity duration-300 ${activePeerId === peer.userId ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                                    }`}>
                                     <button
-                                        onClick={() => handleMute(peer.userId, peer.isMuted)}
+                                        onClick={(e) => {
+                                            e.stopPropagation(); // Prevent toggling the container
+                                            handleMute(peer.userId, peer.isMuted);
+                                        }}
                                         className={`p-2 rounded-full ${peer.isMuted ? 'bg-red-500 text-white' : 'bg-gray-800/80 hover:bg-gray-700'}`}
                                         title={peer.isMuted ? "Unmute User" : "Mute User"}
                                     >
                                         {peer.isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
                                     </button>
                                     <button
-                                        onClick={() => handleKick(peer.userId)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleKick(peer.userId);
+                                        }}
                                         className="p-2 rounded-full bg-red-500/80 hover:bg-red-600 text-white"
                                         title="Kick User"
                                     >
