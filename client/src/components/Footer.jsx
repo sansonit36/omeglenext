@@ -21,7 +21,7 @@ const Footer = () => {
                     </div>
 
                     {/* Center: Compact Links (Horizontal) */}
-                    <div className="flex flex-wrap justify-center gap-x-12 gap-y-4">
+                    <div className="flex flex-wrap justify-center gap-x-16 gap-y-6">
                         <FooterLink to="/about">About</FooterLink>
                         <FooterLink to="/features">Features</FooterLink>
                         <FooterLink to="/support/safety">Safety</FooterLink>
@@ -32,7 +32,7 @@ const Footer = () => {
                     </div>
 
                     {/* Right: Socials */}
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-6">
                         <SocialLink href="#" icon={<Facebook size={16} />} />
                         <SocialLink href="#" icon={<Twitter size={16} />} />
                         <SocialLink href="#" icon={<Instagram size={16} />} />
@@ -45,7 +45,7 @@ const Footer = () => {
 };
 
 const FooterLink = ({ to, children }) => (
-    <Link to={to} className="text-sm font-medium text-gray-400 hover:text-white transition-colors duration-200 no-underline">
+    <Link to={to} className="text-sm font-medium text-gray-400 hover:text-white transition-colors duration-200 no-underline px-2">
         {children}
     </Link>
 );
