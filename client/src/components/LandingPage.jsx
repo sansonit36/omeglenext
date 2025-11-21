@@ -3,6 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { Video, Users, Zap, Globe, LogIn } from 'lucide-react';
 
+import AdsterraNativeBanner from './ads/AdsterraNativeBanner';
+
 const LandingPage = ({ onEnter, onCreateRoom, onJoinRoom, onJoinRandom }) => {
     const [interest, setInterest] = useState('');
     const [joinRoomId, setJoinRoomId] = useState('');
@@ -69,6 +71,12 @@ const LandingPage = ({ onEnter, onCreateRoom, onJoinRoom, onJoinRandom }) => {
                         No registration, no strings attached. Just pure connection.
                     </p>
                 </div>
+
+
+
+                // ... (imports)
+
+                // ... (inside component)
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
                     {/* Random Chat Panel */}
@@ -141,6 +149,11 @@ const LandingPage = ({ onEnter, onCreateRoom, onJoinRoom, onJoinRandom }) => {
                             </button>
                         </div>
                     </div>
+                </div>
+
+                {/* Adsterra Native Banner */}
+                <div className="max-w-2xl mx-auto w-full">
+                    <AdsterraNativeBanner />
                 </div>
 
                 <div className="pt-4 border-t border-white/5 text-xs text-gray-500 flex flex-wrap justify-center gap-3 sm:gap-6">

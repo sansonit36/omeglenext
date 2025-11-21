@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async';
 const Tracking = () => {
     // Replace these with actual Pixel IDs from the user or env vars
     const TIKTOK_PIXEL_ID = 'D4GDR8BC77UA1JCPQDPG';
-    const FACEBOOK_PIXEL_ID = 'YOUR_FACEBOOK_PIXEL_ID';
+    const FACEBOOK_PIXEL_ID = '2302391073537222';
 
     return (
         <Helmet>

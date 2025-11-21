@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Send, Mic, MicOff, Video, VideoOff, SkipForward, MessageSquare, RefreshCw } from 'lucide-react';
+import AdsterraBanner468x60 from './ads/AdsterraBanner468x60';
 
 const VideoChat = ({ socket, onLeave }) => {
     const [message, setMessage] = useState('');
@@ -561,6 +562,12 @@ const VideoChat = ({ socket, onLeave }) => {
 
                 {/* Chat Area - Fixed height on mobile, full height on desktop */}
                 <div className="w-full h-[40vh] md:w-96 md:h-auto bg-[#0f0f13] border-t md:border-t-0 md:border-l border-white/10 flex flex-col absolute bottom-0 md:relative z-20 md:z-0 shadow-lg md:shadow-none">
+
+
+                    // ... (imports)
+
+                    // ... (inside component)
+
                     <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
                         {messages.map((msg, idx) => (
                             <div key={idx} className={`flex ${msg.type === 'local' ? 'justify-end' : 'justify-start'}`}>
@@ -575,6 +582,11 @@ const VideoChat = ({ socket, onLeave }) => {
                             </div>
                         ))}
                         <div ref={chatEndRef} />
+                    </div>
+
+                    {/* Adsterra Banner */}
+                    <div className="px-2">
+                        <AdsterraBanner468x60 />
                     </div>
 
                     <div className="p-3 sm:p-4 border-t border-white/10 space-y-3 sm:space-y-4 bg-[#0f0f13]">
