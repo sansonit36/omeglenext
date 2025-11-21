@@ -44,29 +44,13 @@ const VideoChat = ({ socket, onLeave }) => {
     const peerConnectionRef = useRef(null);
     const localStreamRef = useRef(null);
     const connectionTimeoutRef = useRef(null);
+    const chatEndRef = useRef(null);
+    const partnerIdRef = useRef(null);
 
-    // ... inside partner_found ...
-    // Clear any existing timeout
-    if (connectionTimeoutRef.current) clearTimeout(connectionTimeoutRef.current);
-
-    // Set new timeout
-    connectionTimeoutRef.current = setTimeout(() => {
-        if (isVideoLoading) {
-            setIsVideoLoading(false);
-            setMessages(prev => [...prev, { type: 'system', text: 'Connection timed out. Firewalls might be blocking the video. Try "Next Stranger".' }]);
-        }
-    }, 15000); // 15 seconds
-
-    // ... inside onCanPlay ...
-    // clearTimeout(connectionTimeoutRef.current);
-
-    // ... inside handleNext ...
-    // clearTimeout(connectionTimeoutRef.current);
-
-    // I will implement this by modifying the specific blocks.
-
-    // First, let's add the ref and modify handleNext to clear it.
-
+    // Sync ref with state
+    useEffect(() => {
+        partnerIdRef.current = partnerId;
+    }, [partnerId]);
 
     // Scroll to bottom of chat
     useEffect(() => {
@@ -207,6 +191,11 @@ const VideoChat = ({ socket, onLeave }) => {
         partnerIdRef.current = null; // Clear ref immediately
         setRoomId(null);
 
+        // Reset Game State
+        setGameMenuOpen(false);
+        setActiveGame(null);
+        setGameInvite(null);
+
         // Clear remote video
         if (remoteVideoRef.current) {
             remoteVideoRef.current.srcObject = null;
@@ -215,14 +204,6 @@ const VideoChat = ({ socket, onLeave }) => {
         // Rejoin queue
         socket.emit('join_queue');
     }, [socket]); // Removed partnerId from dependency, now stable
-
-    const chatEndRef = useRef(null);
-    const partnerIdRef = useRef(null);
-
-    // Sync ref with state
-    useEffect(() => {
-        partnerIdRef.current = partnerId;
-    }, [partnerId]);
 
     // Initialize WebRTC and Socket listeners
     useEffect(() => {
@@ -376,6 +357,30 @@ const VideoChat = ({ socket, onLeave }) => {
             }, 1500);
         });
 
+        // --- Game Events ---
+        socket.on('game_invite', ({ inviterId, gameType }) => {
+            setGameInvite({ inviterId, gameType });
+        });
+
+        socket.on('game_start', ({ gameId, gameType, players, turn }) => {
+            setActiveGame({ id: gameId, type: gameType, players, turn, board: Array(9).fill(null), status: 'playing' });
+            setGameInvite(null);
+            setGameMenuOpen(false);
+        });
+
+        socket.on('game_update', ({ board, turn, status, winner }) => {
+            setActiveGame(prev => prev ? { ...prev, board, turn, status, winner } : null);
+        });
+
+        socket.on('game_ended', ({ reason }) => {
+            setActiveGame(null);
+            alert('Game ended: ' + reason);
+        });
+
+        socket.on('game_rejected', () => {
+            alert('Game invite rejected.');
+        });
+
         return () => {
             // Cleanup only on unmount or if socket/handleNext changes (which should be rare)
             if (peerConnectionRef.current) {
@@ -389,6 +394,13 @@ const VideoChat = ({ socket, onLeave }) => {
             socket.off('signal');
             socket.off('message');
             socket.off('partner_disconnected');
+
+            // Game cleanup
+            socket.off('game_invite');
+            socket.off('game_start');
+            socket.off('game_update');
+            socket.off('game_ended');
+            socket.off('game_rejected');
         };
     }, [socket, handleNext]); // Removed partnerId from dependency
 
@@ -403,7 +415,41 @@ const VideoChat = ({ socket, onLeave }) => {
         setMessage('');
     };
 
+    // Game Actions
+    const handleInviteGame = (gameType) => {
+        if (partnerId) {
+            socket.emit('game_invite', { targetId: partnerId, gameType });
+            setGameMenuOpen(false);
+            setMessages(prev => [...prev, { type: 'system', text: `Invited stranger to play ${gameType}...` }]);
+        }
+    };
 
+    const handleAcceptGame = () => {
+        if (gameInvite) {
+            socket.emit('game_accept', { inviterId: gameInvite.inviterId, gameType: gameInvite.gameType });
+            setGameInvite(null);
+        }
+    };
+
+    const handleRejectGame = () => {
+        if (gameInvite) {
+            socket.emit('game_reject', { inviterId: gameInvite.inviterId });
+            setGameInvite(null);
+        }
+    };
+
+    const handleGameMove = (index) => {
+        if (activeGame) {
+            socket.emit('game_move', { gameId: activeGame.id, index });
+        }
+    };
+
+    const handleCloseGame = () => {
+        if (activeGame) {
+            socket.emit('game_leave', { gameId: activeGame.id });
+            setActiveGame(null);
+        }
+    };
 
     if (mediaError) {
         return (
@@ -433,9 +479,39 @@ const VideoChat = ({ socket, onLeave }) => {
     }
 
     return (
-        <div className="h-screen flex flex-col bg-black">
+        <div className="h-screen flex flex-col bg-black relative">
+            {/* Game Invite Modal */}
+            {gameInvite && (
+                <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 bg-[#1a1a23] border border-indigo-500/50 p-4 rounded-xl shadow-2xl animate-in slide-in-from-top-5 fade-in duration-300">
+                    <div className="text-white font-bold mb-3 text-center">
+                        Stranger wants to play <span className="text-indigo-400">{gameInvite.gameType}</span>!
+                    </div>
+                    <div className="flex gap-3 justify-center">
+                        <button onClick={handleAcceptGame} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold transition-colors">
+                            Accept
+                        </button>
+                        <button onClick={handleRejectGame} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition-colors">
+                            Decline
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Active Game Overlay */}
+            {activeGame && activeGame.type === 'tictactoe' && (
+                <TicTacToe
+                    board={activeGame.board}
+                    turn={activeGame.turn}
+                    myId={socket.id}
+                    onMove={handleGameMove}
+                    status={activeGame.status}
+                    winner={activeGame.winner}
+                    onClose={handleCloseGame}
+                />
+            )}
+
             {/* Header */}
-            <header className="h-14 sm:h-16 border-b border-white/10 flex items-center justify-between px-3 sm:px-6 bg-[#1a1a23] z-50 relative">
+            <header className="h-14 sm:h-16 border-b border-white/10 flex items-center justify-between px-3 sm:px-6 bg-[#1a1a23] z-40 relative">
                 <div className="flex items-center gap-1.5 sm:gap-2">
                     <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-500 animate-pulse"></div>
                     <span className="font-bold text-base sm:text-lg tracking-tight">Omegle<span className="text-indigo-500">Next</span></span>
@@ -543,7 +619,12 @@ const VideoChat = ({ socket, onLeave }) => {
                         <div ref={chatEndRef} />
                     </div>
 
-                    <div className="p-3 sm:p-4 border-t border-white/10 space-y-3 sm:space-y-4 bg-[#0f0f13]">
+                    <div className="p-3 sm:p-4 border-t border-white/10 space-y-3 sm:space-y-4 bg-[#0f0f13] relative">
+                        {/* Game Menu Popover */}
+                        {gameMenuOpen && (
+                            <GameMenu onSelectGame={handleInviteGame} onClose={() => setGameMenuOpen(false)} />
+                        )}
+
                         <form onSubmit={sendMessage} className="relative">
                             <input
                                 type="text"
@@ -562,14 +643,25 @@ const VideoChat = ({ socket, onLeave }) => {
                             </button>
                         </form>
 
-                        <button
-                            onClick={() => handleNext(true)}
-                            disabled={isSearching}
-                            className="w-full bg-white text-black font-bold py-2.5 sm:py-3 rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <SkipForward size={18} className="sm:w-5 sm:h-5" />
-                            Next Stranger
-                        </button>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setGameMenuOpen(!gameMenuOpen)}
+                                disabled={isSearching || !partnerId}
+                                className={`p-3 rounded-xl transition-colors flex items-center justify-center ${gameMenuOpen ? 'bg-indigo-600 text-white' : 'bg-white/10 hover:bg-white/20 text-indigo-400'
+                                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                title="Play a Game"
+                            >
+                                <Gamepad2 size={20} />
+                            </button>
+                            <button
+                                onClick={() => handleNext(true)}
+                                disabled={isSearching}
+                                className="flex-1 bg-white text-black font-bold py-2.5 sm:py-3 rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <SkipForward size={18} className="sm:w-5 sm:h-5" />
+                                Next Stranger
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
