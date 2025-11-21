@@ -1,96 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import { io } from 'socket.io-client';
-import LandingPage from './components/LandingPage';
-import VideoChat from './components/VideoChat';
-import GroupVideoChat from './components/GroupVideoChat';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
+import TermsOfService from './pages/legal/TermsOfService';
+import PrivacyPolicy from './pages/legal/PrivacyPolicy';
+import CookiePolicy from './pages/legal/CookiePolicy';
+import CommunityGuidelines from './pages/legal/CommunityGuidelines';
+import ContactUs from './pages/support/ContactUs';
+import SafetyCenter from './pages/support/SafetyCenter';
+import AboutUs from './pages/general/AboutUs';
+import NotFound from './pages/NotFound';
+import LegalLayout from './layouts/LegalLayout';
 import './index.css';
 
 function App() {
-  const [inChat, setInChat] = useState(false);
-  const [isGroupMode, setIsGroupMode] = useState(false);
-  const [roomId, setRoomId] = useState(null);
-  const [socket, setSocket] = useState(null);
-
-  useEffect(() => {
-    // Initialize socket connection - use env var for production
-    console.log('App Version: 1.1.0 (STUN Fix Applied)');
-    const newSocket = io(import.meta.env.VITE_SERVER_URL || 'http://localhost:5000');
-    setSocket(newSocket);
-
-    return () => {
-      if (newSocket) newSocket.disconnect();
-    };
-  }, []);
-
-  const handleEnter = () => {
-    setInChat(true);
-    setIsGroupMode(false);
-  };
-
-  const handleCreateRoom = (limit) => {
-    socket.emit('create_room', { limit });
-    socket.once('room_created', ({ roomId }) => {
-      setRoomId(roomId);
-      setIsGroupMode(true);
-      setInChat(true);
-    });
-  };
-
-  const handleJoinRoom = (id) => {
-    setRoomId(id);
-    setIsGroupMode(true);
-    setInChat(true);
-  };
-
-  const handleJoinRandom = () => {
-    socket.emit('find_random_room');
-    socket.once('random_room_found', ({ roomId }) => {
-      setRoomId(roomId);
-      setIsGroupMode(true);
-      setInChat(true);
-    });
-    socket.once('error', ({ message }) => {
-      alert(message);
-    });
-  };
-
-  const handleLeave = () => {
-    setInChat(false);
-    setIsGroupMode(false);
-    setRoomId(null);
-    if (isGroupMode) {
-      socket.emit('leave_room'); // Ensure cleanup
-    }
-  };
-
-  if (!socket) {
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-gray-400">Connecting...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <>
-      {inChat ? (
-        isGroupMode ? (
-          <GroupVideoChat socket={socket} roomId={roomId} onLeave={handleLeave} />
-        ) : (
-          <VideoChat socket={socket} onLeave={handleLeave} />
-        )
-      ) : (
-        <LandingPage
-          onEnter={handleEnter}
-          onCreateRoom={handleCreateRoom}
-          onJoinRoom={handleJoinRoom}
-          onJoinRandom={handleJoinRandom}
-        />
-      )}
-    </>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+
+        {/* Legal Routes */}
+        <Route path="/legal/terms" element={<LegalLayout title="Terms of Service"><TermsOfService /></LegalLayout>} />
+        <Route path="/legal/privacy" element={<LegalLayout title="Privacy Policy"><PrivacyPolicy /></LegalLayout>} />
+        <Route path="/legal/cookies" element={<LegalLayout title="Cookie Policy"><CookiePolicy /></LegalLayout>} />
+        <Route path="/legal/guidelines" element={<LegalLayout title="Community Guidelines"><CommunityGuidelines /></LegalLayout>} />
+
+        {/* Support Routes */}
+        <Route path="/support/contact" element={<LegalLayout title="Contact Us"><ContactUs /></LegalLayout>} />
+        <Route path="/support/safety" element={<LegalLayout title="Safety Center"><SafetyCenter /></LegalLayout>} />
+
+        {/* General Routes */}
+        <Route path="/about" element={<LegalLayout title="About Us"><AboutUs /></LegalLayout>} />
+
+        {/* Fallback */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Router>
   );
 }
 
