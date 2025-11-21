@@ -1,5 +1,7 @@
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import { Video, Users, Zap, Globe, LogIn } from 'lucide-react';
 
 const LandingPage = ({ onEnter, onCreateRoom, onJoinRoom, onJoinRandom }) => {
     const [interest, setInterest] = useState('');
