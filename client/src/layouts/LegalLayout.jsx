@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
 import Footer from '../components/Footer';
+import SEO from '../components/SEO';
 import './LegalLayout.css';
 
 export default function LegalLayout({ children, title }) {
     return (
         <div className="legal-layout bg-[#0f0f13] min-h-screen flex flex-col">
+            <SEO title={title} />
             <header className="legal-header border-b border-white/10 bg-[#1a1a23]">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-2">

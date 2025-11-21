@@ -4,6 +4,7 @@ import LandingPage from '../components/LandingPage';
 import VideoChat from '../components/VideoChat';
 import GroupVideoChat from '../components/GroupVideoChat';
 import Footer from '../components/Footer';
+import SEO from '../components/SEO';
 
 function Home() {
     const [inChat, setInChat] = useState(false);
@@ -76,6 +77,10 @@ function Home() {
 
     return (
         <div className="min-h-screen flex flex-col bg-[#0f0f13]">
+            <SEO
+                title="Talk to Strangers | Random Video Chat"
+                description="Join Zingle to meet new people instantly. The best free random video chat alternative to Omegle. Safe, anonymous, and fun!"
+            />
             <div className="flex-grow">
                 {inChat ? (
                     isGroupMode ? (
