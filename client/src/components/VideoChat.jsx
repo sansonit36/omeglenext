@@ -328,6 +328,10 @@ const VideoChat = ({ socket, onLeave }) => {
             }
         });
 
+        const pendingCandidates = useRef([]); // Buffer for early candidates
+
+        // ... (inside useEffect)
+
         socket.on('signal', async ({ sender, signal }) => {
             // Validate sender is current partner
             if (sender !== partnerIdRef.current) {
@@ -341,8 +345,6 @@ const VideoChat = ({ socket, onLeave }) => {
             try {
                 if (signal.type === 'offer') {
                     if (pc.signalingState !== 'stable') {
-                        // Glare handling: if we are polite, we might rollback. 
-                        // For now, just log it.
                         console.warn('Received offer in non-stable state');
                     }
                     await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
@@ -351,13 +353,37 @@ const VideoChat = ({ socket, onLeave }) => {
                     const answer = await pc.createAnswer();
                     await pc.setLocalDescription(answer);
                     socket.emit('signal', { target: sender, signal: { type: 'answer', sdp: answer } });
+
+                    // Process queued candidates
+                    while (pendingCandidates.current.length > 0) {
+                        const candidate = pendingCandidates.current.shift();
+                        try {
+                            await pc.addIceCandidate(candidate);
+                        } catch (e) {
+                            console.error('Error adding queued candidate:', e);
+                        }
+                    }
                 } else if (signal.type === 'answer') {
                     if (pc.signalingState === 'have-local-offer') {
                         await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+
+                        // Process queued candidates
+                        while (pendingCandidates.current.length > 0) {
+                            const candidate = pendingCandidates.current.shift();
+                            try {
+                                await pc.addIceCandidate(candidate);
+                            } catch (e) {
+                                console.error('Error adding queued candidate:', e);
+                            }
+                        }
                     }
                 } else if (signal.type === 'candidate') {
-                    if (pc.remoteDescription && pc.signalingState !== 'closed') {
-                        await pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
+                    const candidate = new RTCIceCandidate(signal.candidate);
+                    if (pc.remoteDescription && pc.remoteDescription.type) {
+                        await pc.addIceCandidate(candidate);
+                    } else {
+                        console.log('Buffering ICE candidate (remote description not ready)');
+                        pendingCandidates.current.push(candidate);
                     }
                 }
             } catch (err) {
