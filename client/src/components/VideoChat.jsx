@@ -44,6 +44,7 @@ const VideoChat = ({ socket, onLeave }) => {
     const peerConnectionRef = useRef(null);
     const localStreamRef = useRef(null);
     const connectionTimeoutRef = useRef(null);
+    const pendingCandidates = useRef([]); // Buffer for early candidates
 
     // ... inside partner_found ...
     // Clear any existing timeout
@@ -328,7 +329,7 @@ const VideoChat = ({ socket, onLeave }) => {
             }
         });
 
-        const pendingCandidates = useRef([]); // Buffer for early candidates
+
 
         // ... (inside useEffect)
 
