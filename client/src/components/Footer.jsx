@@ -1,114 +1,97 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, Shield, FileText, Mail, Info, Twitter, Instagram, Github, Globe } from 'lucide-react';
+import { Twitter, Instagram, Github, Globe, Shield, Mail, Circle } from 'lucide-react';
 
 const Footer = () => {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="relative bg-[#0f0f13] border-t border-white/5 pt-12 pb-8 mt-auto overflow-hidden">
-            {/* Background Glows - Subtle */}
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-600/5 rounded-full blur-[120px] -translate-y-1/2 pointer-events-none"></div>
-            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/5 rounded-full blur-[120px] translate-y-1/2 pointer-events-none"></div>
-
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div className="flex flex-col lg:flex-row justify-between gap-12 lg:gap-8 mb-12">
-                    {/* Brand Column */}
-                    <div className="lg:w-1/3 space-y-6">
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
+        <footer className="bg-black border-t border-white/10 pt-16 pb-8 mt-auto">
+            <div className="max-w-7xl mx-auto px-6 lg:px-8">
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-8 lg:gap-12 mb-16">
+                    {/* Brand Column - Spans 2 columns */}
+                    <div className="col-span-2 md:col-span-2 space-y-6">
+                        <Link to="/" className="flex items-center gap-2 group">
+                            <div className="w-4 h-4 rounded-full bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)] group-hover:shadow-[0_0_25px_rgba(99,102,241,0.8)] transition-all duration-300"></div>
                             <span className="font-bold text-2xl tracking-tight text-white">Zingle</span>
-                        </div>
-                        <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
-                            Experience the next generation of random video chat. Connect globally, stay anonymous, and find your vibe instantly.
+                        </Link>
+                        <p className="text-zinc-400 text-sm leading-relaxed max-w-xs">
+                            The next generation of anonymous video chat. Connect instantly, safely, and globally.
                         </p>
-                        <div className="flex gap-3">
-                            <a href="#" className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all duration-300 border border-white/5 hover:border-white/20">
-                                <Twitter size={16} />
-                            </a>
-                            <a href="#" className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all duration-300 border border-white/5 hover:border-white/20">
-                                <Instagram size={16} />
-                            </a>
-                            <a href="#" className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all duration-300 border border-white/5 hover:border-white/20">
-                                <Github size={16} />
-                            </a>
+                        <div className="flex items-center gap-4">
+                            <SocialLink href="#" icon={<Twitter size={18} />} />
+                            <SocialLink href="#" icon={<Instagram size={18} />} />
+                            <SocialLink href="#" icon={<Github size={18} />} />
                         </div>
                     </div>
 
-                    {/* Links Container */}
-                    <div className="flex-1 grid grid-cols-2 md:grid-cols-3 gap-8 lg:gap-12">
-                        {/* Quick Links */}
-                        <div>
-                            <h3 className="text-white font-semibold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider opacity-80">
-                                Discover
-                            </h3>
-                            <ul className="space-y-2.5 text-sm text-gray-400">
-                                <li>
-                                    <Link to="/" className="hover:text-indigo-400 transition-colors block">Home</Link>
-                                </li>
-                                <li>
-                                    <Link to="/about" className="hover:text-indigo-400 transition-colors block">About Us</Link>
-                                </li>
-                                <li>
-                                    <Link to="/support/safety" className="hover:text-indigo-400 transition-colors block">Safety Center</Link>
-                                </li>
-                            </ul>
-                        </div>
+                    {/* Navigation Columns */}
+                    <div className="col-span-1">
+                        <h4 className="font-semibold text-white mb-4 text-sm">Product</h4>
+                        <ul className="space-y-3 text-sm text-zinc-500">
+                            <li><FooterLink to="/">Home</FooterLink></li>
+                            <li><FooterLink to="/about">About</FooterLink></li>
+                            <li><FooterLink to="/features">Features</FooterLink></li>
+                        </ul>
+                    </div>
 
-                        {/* Legal */}
-                        <div>
-                            <h3 className="text-white font-semibold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider opacity-80">
-                                Legal
-                            </h3>
-                            <ul className="space-y-2.5 text-sm text-gray-400">
-                                <li>
-                                    <Link to="/legal/terms" className="hover:text-indigo-400 transition-colors block">Terms of Service</Link>
-                                </li>
-                                <li>
-                                    <Link to="/legal/privacy" className="hover:text-indigo-400 transition-colors block">Privacy Policy</Link>
-                                </li>
-                                <li>
-                                    <Link to="/legal/cookies" className="hover:text-indigo-400 transition-colors block">Cookie Policy</Link>
-                                </li>
-                                <li>
-                                    <Link to="/legal/guidelines" className="hover:text-indigo-400 transition-colors block">Guidelines</Link>
-                                </li>
-                            </ul>
-                        </div>
+                    <div className="col-span-1">
+                        <h4 className="font-semibold text-white mb-4 text-sm">Resources</h4>
+                        <ul className="space-y-3 text-sm text-zinc-500">
+                            <li><FooterLink to="/support/safety">Safety Center</FooterLink></li>
+                            <li><FooterLink to="/guidelines">Guidelines</FooterLink></li>
+                            <li><FooterLink to="/blog">Blog</FooterLink></li>
+                        </ul>
+                    </div>
 
-                        {/* Support */}
-                        <div className="col-span-2 md:col-span-1">
-                            <h3 className="text-white font-semibold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider opacity-80">
-                                Support
-                            </h3>
-                            <div className="p-4 rounded-xl bg-white/5 border border-white/5 backdrop-blur-sm">
-                                <p className="text-gray-400 text-xs mb-3 leading-relaxed">
-                                    Need help? Our team is available 24/7.
-                                </p>
-                                <Link
-                                    to="/support/contact"
-                                    className="block w-full py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold text-center rounded-lg transition-all shadow-lg shadow-indigo-500/20"
-                                >
-                                    Contact Us
-                                </Link>
-                            </div>
-                        </div>
+                    <div className="col-span-1">
+                        <h4 className="font-semibold text-white mb-4 text-sm">Legal</h4>
+                        <ul className="space-y-3 text-sm text-zinc-500">
+                            <li><FooterLink to="/legal/terms">Terms</FooterLink></li>
+                            <li><FooterLink to="/legal/privacy">Privacy</FooterLink></li>
+                            <li><FooterLink to="/legal/cookies">Cookies</FooterLink></li>
+                        </ul>
+                    </div>
+
+                    <div className="col-span-1">
+                        <h4 className="font-semibold text-white mb-4 text-sm">Support</h4>
+                        <ul className="space-y-3 text-sm text-zinc-500">
+                            <li><FooterLink to="/support/contact">Contact Us</FooterLink></li>
+                            <li><FooterLink to="/status">System Status</FooterLink></li>
+                        </ul>
                     </div>
                 </div>
 
-                <div className="border-t border-white/5 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p className="text-gray-600 text-xs">
+                {/* Bottom Bar */}
+                <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                            <span className="text-xs font-medium text-emerald-500">All Systems Operational</span>
+                        </div>
+                    </div>
+                    <p className="text-zinc-600 text-sm">
                         © {currentYear} Zingle Inc. All rights reserved.
                     </p>
-                    <div className="flex items-center gap-1.5 text-gray-600 text-xs">
-                        <span>Made with</span>
-                        <Heart size={12} className="text-red-500 fill-red-500" />
-                        <span>globally</span>
-                    </div>
                 </div>
             </div>
         </footer>
     );
 };
+
+const FooterLink = ({ to, children }) => (
+    <Link to={to} className="hover:text-indigo-400 transition-colors duration-200 block">
+        {children}
+    </Link>
+);
+
+const SocialLink = ({ href, icon }) => (
+    <a
+        href={href}
+        className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white transition-all duration-200"
+    >
+        {icon}
+    </a>
+);
 
 export default Footer;
