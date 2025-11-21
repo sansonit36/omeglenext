@@ -146,6 +146,10 @@ const GroupVideoChat = ({ socket, roomId, onLeave }) => {
         });
 
         socket.on('user_muted', ({ userId, muted }) => {
+            if (userId === socket.id) {
+                setMicOn(!muted);
+                if (muted) alert('You have been muted by the admin.');
+            }
             setPeers(prev => prev.map(p => {
                 if (p.userId === userId) {
                     return { ...p, isMuted: muted };
