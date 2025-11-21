@@ -1,76 +1,86 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Twitter, Instagram, Github, Globe, Shield, Mail, Circle } from 'lucide-react';
+import { Twitter, Instagram, Github, Globe, Facebook } from 'lucide-react';
 
 const Footer = () => {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="bg-black border-t border-white/10 pt-16 pb-8 mt-auto">
+        <footer className="bg-black text-white pt-20 pb-10 mt-auto font-sans">
             <div className="max-w-7xl mx-auto px-6 lg:px-8">
-                <div className="grid grid-cols-2 md:grid-cols-6 gap-8 lg:gap-12 mb-16">
-                    {/* Brand Column - Spans 2 columns */}
-                    <div className="col-span-2 md:col-span-2 space-y-6">
-                        <Link to="/" className="flex items-center gap-2 group">
-                            <div className="w-4 h-4 rounded-full bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)] group-hover:shadow-[0_0_25px_rgba(99,102,241,0.8)] transition-all duration-300"></div>
-                            <span className="font-bold text-2xl tracking-tight text-white">Zingle</span>
+                {/* Top Section: Logo/Slogan vs Links */}
+                <div className="flex flex-col lg:flex-row justify-between items-start gap-12 mb-20">
+
+                    {/* Left: Logo & Slogan */}
+                    <div className="lg:w-1/4 space-y-2">
+                        <Link to="/" className="block">
+                            <h2 className="text-3xl font-black tracking-wider uppercase">Zingle</h2>
                         </Link>
-                        <p className="text-zinc-400 text-sm leading-relaxed max-w-xs">
-                            The next generation of anonymous video chat. Connect instantly, safely, and globally.
+                        <p className="text-xs tracking-widest text-gray-400 uppercase">
+                            Talk to Strangers
                         </p>
-                        <div className="flex items-center gap-4">
-                            <SocialLink href="#" icon={<Twitter size={18} />} />
-                            <SocialLink href="#" icon={<Instagram size={18} />} />
-                            <SocialLink href="#" icon={<Github size={18} />} />
+                    </div>
+
+                    {/* Right: Link Columns */}
+                    <div className="flex-1 w-full lg:w-auto grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
+                        {/* Column 1 */}
+                        <div className="space-y-6">
+                            <h4 className="text-xs font-bold tracking-widest text-gray-500 uppercase">Platform</h4>
+                            <ul className="space-y-3 text-sm font-medium">
+                                <li><FooterLink to="/">Home</FooterLink></li>
+                                <li><FooterLink to="/about">About Us</FooterLink></li>
+                                <li><FooterLink to="/features">Features</FooterLink></li>
+                            </ul>
                         </div>
-                    </div>
 
-                    {/* Navigation Columns */}
-                    <div className="col-span-1">
-                        <h4 className="font-semibold text-white mb-4 text-sm">Product</h4>
-                        <ul className="space-y-3 text-sm text-zinc-500">
-                            <li><FooterLink to="/">Home</FooterLink></li>
-                            <li><FooterLink to="/about">About</FooterLink></li>
-                            <li><FooterLink to="/features">Features</FooterLink></li>
-                        </ul>
-                    </div>
+                        {/* Column 2 */}
+                        <div className="space-y-6">
+                            <h4 className="text-xs font-bold tracking-widest text-gray-500 uppercase">Support</h4>
+                            <ul className="space-y-3 text-sm font-medium">
+                                <li><FooterLink to="/support/safety">Safety Center</FooterLink></li>
+                                <li><FooterLink to="/guidelines">Guidelines</FooterLink></li>
+                                <li><FooterLink to="/support/contact">Contact Us</FooterLink></li>
+                            </ul>
+                        </div>
 
-                    <div className="col-span-1">
-                        <h4 className="font-semibold text-white mb-4 text-sm">Resources</h4>
-                        <ul className="space-y-3 text-sm text-zinc-500">
-                            <li><FooterLink to="/support/safety">Safety Center</FooterLink></li>
-                            <li><FooterLink to="/guidelines">Guidelines</FooterLink></li>
-                            <li><FooterLink to="/blog">Blog</FooterLink></li>
-                        </ul>
-                    </div>
+                        {/* Column 3 */}
+                        <div className="space-y-6">
+                            <h4 className="text-xs font-bold tracking-widest text-gray-500 uppercase">Legal</h4>
+                            <ul className="space-y-3 text-sm font-medium">
+                                <li><FooterLink to="/legal/terms">Terms of Service</FooterLink></li>
+                                <li><FooterLink to="/legal/privacy">Privacy Policy</FooterLink></li>
+                                <li><FooterLink to="/legal/cookies">Cookie Policy</FooterLink></li>
+                            </ul>
+                        </div>
 
-                    <div className="col-span-1">
-                        <h4 className="font-semibold text-white mb-4 text-sm">Legal</h4>
-                        <ul className="space-y-3 text-sm text-zinc-500">
-                            <li><FooterLink to="/legal/terms">Terms</FooterLink></li>
-                            <li><FooterLink to="/legal/privacy">Privacy</FooterLink></li>
-                            <li><FooterLink to="/legal/cookies">Cookies</FooterLink></li>
-                        </ul>
-                    </div>
-
-                    <div className="col-span-1">
-                        <h4 className="font-semibold text-white mb-4 text-sm">Support</h4>
-                        <ul className="space-y-3 text-sm text-zinc-500">
-                            <li><FooterLink to="/support/contact">Contact Us</FooterLink></li>
-                            <li><FooterLink to="/status">System Status</FooterLink></li>
-                        </ul>
+                        {/* Column 4 */}
+                        <div className="space-y-6">
+                            <h4 className="text-xs font-bold tracking-widest text-gray-500 uppercase">Community</h4>
+                            <ul className="space-y-3 text-sm font-medium">
+                                <li><FooterLink to="/blog">Blog</FooterLink></li>
+                                <li><FooterLink to="/partners">Partners</FooterLink></li>
+                                <li><FooterLink to="/status">System Status</FooterLink></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
-                {/* Bottom Bar */}
-                <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                            <span className="text-xs font-medium text-emerald-500">All Systems Operational</span>
-                        </div>
+                {/* Divider */}
+                <div className="border-t border-white/10 w-full mb-12"></div>
+
+                {/* Bottom Section: Socials & Copyright */}
+                <div className="flex flex-col items-center space-y-8">
+                    {/* Social Icons */}
+                    <div className="flex items-center gap-6">
+                        <SocialLink href="#" icon={<Facebook size={18} />} />
+                        <SocialLink href="#" icon={<Twitter size={18} />} />
+                        <SocialLink href="#" icon={<Instagram size={18} />} />
+                        <SocialLink href="#" icon={<Github size={18} />} />
+                        <SocialLink href="#" icon={<Globe size={18} />} />
                     </div>
-                    <p className="text-zinc-600 text-sm">
+
+                    {/* Copyright */}
+                    <p className="text-gray-500 text-xs tracking-wide">
                         © {currentYear} Zingle Inc. All rights reserved.
                     </p>
                 </div>
@@ -80,7 +90,7 @@ const Footer = () => {
 };
 
 const FooterLink = ({ to, children }) => (
-    <Link to={to} className="hover:text-indigo-400 transition-colors duration-200 block">
+    <Link to={to} className="text-gray-300 hover:text-white transition-colors duration-200 block">
         {children}
     </Link>
 );
@@ -88,7 +98,7 @@ const FooterLink = ({ to, children }) => (
 const SocialLink = ({ href, icon }) => (
     <a
         href={href}
-        className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white transition-all duration-200"
+        className="w-10 h-10 flex items-center justify-center rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all duration-300"
     >
         {icon}
     </a>
