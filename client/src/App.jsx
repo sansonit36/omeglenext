@@ -11,6 +11,8 @@ import AboutUs from './pages/general/AboutUs';
 import NotFound from './pages/NotFound';
 import AdminLogin from './pages/admin/AdminLogin';
 import Dashboard from './pages/admin/Dashboard';
+import Login from './pages/auth/Login';
+import Signup from './pages/auth/Signup';
 import Tracking from './components/Tracking';
 import LegalLayout from './layouts/LegalLayout';
 import './index.css';
@@ -21,6 +23,10 @@ function App() {
       <Tracking />
       <Routes>
         <Route path="/" element={<Home />} />
+
+        {/* Auth Routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
 
         {/* Legal Routes */}
         <Route path="/legal/terms" element={<LegalLayout title="Terms of Service"><TermsOfService /></LegalLayout>} />

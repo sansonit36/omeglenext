@@ -21,6 +21,14 @@ const LandingPage = ({ onEnter, onCreateRoom, onJoinRoom, onJoinRandom }) => {
                     <div className="w-3 h-3 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
                     <span className="font-bold text-2xl tracking-tight text-white">Zingle</span>
                 </div>
+                <div className="flex items-center gap-4">
+                    <a href="/login" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
+                        Login
+                    </a>
+                    <a href="/signup" className="px-4 py-2 text-sm font-bold text-white bg-white/10 hover:bg-white/20 border border-white/10 rounded-full transition-all backdrop-blur-sm">
+                        Sign Up
+                    </a>
+                </div>
             </nav>
 
             <div className="max-w-4xl w-full text-center space-y-8 sm:space-y-12 animate-fade-in">
