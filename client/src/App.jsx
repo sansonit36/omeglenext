@@ -15,40 +15,46 @@ import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
 import Tracking from './components/Tracking';
 import LegalLayout from './layouts/LegalLayout';
+import { AuthProvider } from './context/AuthContext';
+import UserDashboard from './pages/user/UserDashboard';
 import './index.css';
 
 function App() {
   return (
     <Router>
-      <Tracking />
-      <Routes>
-        <Route path="/" element={<Home />} />
+      <AuthProvider>
+        <Tracking />
+        <Routes>
+          <Route path="/" element={<Home />} />
 
-        {/* Auth Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+          {/* Auth Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/dashboard" element={<UserDashboard />} />
 
-        {/* Legal Routes */}
-        <Route path="/legal/terms" element={<LegalLayout title="Terms of Service"><TermsOfService /></LegalLayout>} />
-        <Route path="/legal/privacy" element={<LegalLayout title="Privacy Policy"><PrivacyPolicy /></LegalLayout>} />
-        <Route path="/legal/cookies" element={<LegalLayout title="Cookie Policy"><CookiePolicy /></LegalLayout>} />
-        <Route path="/legal/guidelines" element={<LegalLayout title="Community Guidelines"><CommunityGuidelines /></LegalLayout>} />
+          {/* Legal Routes */}
+          <Route path="/legal/terms" element={<LegalLayout title="Terms of Service"><TermsOfService /></LegalLayout>} />
+          <Route path="/legal/privacy" element={<LegalLayout title="Privacy Policy"><PrivacyPolicy /></LegalLayout>} />
+          <Route path="/legal/cookies" element={<LegalLayout title="Cookie Policy"><CookiePolicy /></LegalLayout>} />
+          <Route path="/legal/guidelines" element={<LegalLayout title="Community Guidelines"><CommunityGuidelines /></LegalLayout>} />
 
-        {/* Support Routes */}
-        <Route path="/support/contact" element={<LegalLayout title="Contact Us"><ContactUs /></LegalLayout>} />
-        <Route path="/support/safety" element={<LegalLayout title="Safety Center"><SafetyCenter /></LegalLayout>} />
+          {/* Support Routes */}
+          <Route path="/support/contact" element={<LegalLayout title="Contact Us"><ContactUs /></LegalLayout>} />
+          <Route path="/support/safety" element={<LegalLayout title="Safety Center"><SafetyCenter /></LegalLayout>} />
 
-        {/* General Routes */}
-        <Route path="/about" element={<LegalLayout title="About Us"><AboutUs /></LegalLayout>} />
+          {/* General Routes */}
+          <Route path="/about" element={<LegalLayout title="About Us"><AboutUs /></LegalLayout>} />
 
-        {/* Admin Routes */}
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin/dashboard" element={<Dashboard />} />
+          {/* Admin Routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<Dashboard />} />
 
-        {/* Fallback */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
+          {/* Fallback */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+
+      </AuthProvider>
+    </Router >
   );
 }
 

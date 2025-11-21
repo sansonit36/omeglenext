@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { Video, Users, Zap, Globe, LogIn } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 
 const LandingPage = ({ onEnter, onCreateRoom, onJoinRoom, onJoinRandom }) => {
     const [interest, setInterest] = useState('');
     const [joinRoomId, setJoinRoomId] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [roomLimit, setRoomLimit] = useState(5);
+    const { user } = useAuth();
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 sm:p-6 md:p-8 relative overflow-hidden">
@@ -22,12 +23,20 @@ const LandingPage = ({ onEnter, onCreateRoom, onJoinRoom, onJoinRandom }) => {
                     <span className="font-bold text-2xl tracking-tight text-white">Zingle</span>
                 </div>
                 <div className="flex items-center gap-4">
-                    <a href="/login" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
-                        Login
-                    </a>
-                    <a href="/signup" className="px-4 py-2 text-sm font-bold text-white bg-white/10 hover:bg-white/20 border border-white/10 rounded-full transition-all backdrop-blur-sm">
-                        Sign Up
-                    </a>
+                    {user ? (
+                        <Link to="/dashboard" className="px-4 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-full transition-all shadow-lg shadow-indigo-500/25">
+                            Dashboard
+                        </Link>
+                    ) : (
+                        <>
+                            <Link to="/login" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
+                                Login
+                            </Link>
+                            <Link to="/signup" className="px-4 py-2 text-sm font-bold text-white bg-white/10 hover:bg-white/20 border border-white/10 rounded-full transition-all backdrop-blur-sm">
+                                Sign Up
+                            </Link>
+                        </>
+                    )}
                 </div>
             </nav>
 
