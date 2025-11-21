@@ -74,9 +74,6 @@ const LandingPage = ({ onEnter, onCreateRoom, onJoinRoom, onJoinRandom }) => {
 
 
 
-                // ... (imports)
-
-                // ... (inside component)
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
                     {/* Random Chat Panel */}

@@ -564,9 +564,6 @@ const VideoChat = ({ socket, onLeave }) => {
                 <div className="w-full h-[40vh] md:w-96 md:h-auto bg-[#0f0f13] border-t md:border-t-0 md:border-l border-white/10 flex flex-col absolute bottom-0 md:relative z-20 md:z-0 shadow-lg md:shadow-none">
 
 
-                    // ... (imports)
-
-                    // ... (inside component)
 
                     <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
                         {messages.map((msg, idx) => (
