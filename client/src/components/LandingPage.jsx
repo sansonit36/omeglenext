@@ -25,15 +25,22 @@ const LandingPage = ({ onEnter, onCreateRoom, onJoinRoom, onJoinRandom }) => {
 
             <div className="max-w-4xl w-full text-center space-y-8 sm:space-y-12 animate-fade-in">
                 <div className="space-y-4 sm:space-y-6">
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/5 border border-white/10 text-xs sm:text-sm font-medium text-indigo-400">
-                        <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-                        </span>
-                        <span className="hidden xs:inline">24,102 users online now</span>
-                        <span className="xs:hidden">24K online</span>
-                    </div>
+                    <div className="text-center space-y-6 mb-12">
+                        <div className="relative inline-block">
+                            <h1 className="text-6xl sm:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 animate-gradient-x pb-2">
+                                Zingle
+                            </h1>
+                            <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-lg blur opacity-20 animate-pulse"></div>
+                        </div>
 
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
+                            <span className="relative flex h-3 w-3">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                            </span>
+                            <span className="text-gray-300 font-medium">24,000+ users online</span>
+                        </div>
+                    </div>
                     <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight px-2">
                         Talk to <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Strangers</span>
                     </h1>
