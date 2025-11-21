@@ -9,12 +9,16 @@ import ContactUs from './pages/support/ContactUs';
 import SafetyCenter from './pages/support/SafetyCenter';
 import AboutUs from './pages/general/AboutUs';
 import NotFound from './pages/NotFound';
+import AdminLogin from './pages/admin/AdminLogin';
+import Dashboard from './pages/admin/Dashboard';
+import Tracking from './components/Tracking';
 import LegalLayout from './layouts/LegalLayout';
 import './index.css';
 
 function App() {
   return (
     <Router>
+      <Tracking />
       <Routes>
         <Route path="/" element={<Home />} />
 
@@ -30,6 +34,10 @@ function App() {
 
         {/* General Routes */}
         <Route path="/about" element={<LegalLayout title="About Us"><AboutUs /></LegalLayout>} />
+
+        {/* Admin Routes */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={<Dashboard />} />
 
         {/* Fallback */}
         <Route path="*" element={<NotFound />} />

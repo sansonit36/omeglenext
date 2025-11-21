@@ -1,43 +1,67 @@
+const geoip = require('geoip-lite');
+
+// In-memory stats storage (reset on server restart)
+const stats = {
+    totalVisits: 0,
+    activeUsers: 0,
+    totalTimeSpent: 0, // in seconds
+    countryDistribution: {}, // { "US": 10, "IN": 5 }
+    sessions: new Map() // socket.id -> startTime
+};
+
 module.exports = (io) => {
     let waitingUsers = [];
-    const userRooms = new Map(); // Track which room each user is in: socket.id -> roomId
-    const rooms = new Map(); // Track room details: roomId -> { id, admin, limit, users: [], muted: Set() }
+    const userRooms = new Map();
+    const rooms = new Map();
+
+    // Expose stats getter for API
+    io.getStats = () => ({
+        totalVisits: stats.totalVisits,
+        activeUsers: stats.activeUsers,
+        avgTimeSpent: stats.totalVisits > 0 ? Math.round(stats.totalTimeSpent / stats.totalVisits) : 0,
+        countryDistribution: stats.countryDistribution
+    });
 
     io.on('connection', (socket) => {
-        console.log('User connected:', socket.id);
+        // Track new visit
+        stats.totalVisits++;
+        stats.activeUsers++;
+        stats.sessions.set(socket.id, Date.now());
+
+        // Track Country
+        const ip = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
+        const geo = geoip.lookup(ip);
+        const country = geo ? geo.country : 'Unknown';
+
+        stats.countryDistribution[country] = (stats.countryDistribution[country] || 0) + 1;
+
+        console.log(`User connected: ${socket.id} from ${country}`);
 
         // --- 1-on-1 Random Chat Logic ---
 
         socket.on('join_queue', () => {
-            // If there's someone waiting, pair them up
             if (waitingUsers.length > 0) {
                 const partnerSocket = waitingUsers.pop();
 
-                // Ensure the partner is still connected
                 if (io.sockets.sockets.get(partnerSocket.id)) {
                     const roomId = `${socket.id}-${partnerSocket.id}`;
 
                     socket.join(roomId);
                     partnerSocket.join(roomId);
 
-                    // Track rooms
                     userRooms.set(socket.id, { roomId, partnerId: partnerSocket.id, type: '1on1' });
                     userRooms.set(partnerSocket.id, { roomId, partnerId: socket.id, type: '1on1' });
 
-                    // Notify both users they are paired
                     io.to(roomId).emit('paired', { roomId });
 
-                    // Inform each user of their partner's ID
                     socket.emit('partner_found', { partnerId: partnerSocket.id, initiator: true });
                     partnerSocket.emit('partner_found', { partnerId: socket.id, initiator: false });
 
                     console.log(`Paired ${socket.id} with ${partnerSocket.id} in room ${roomId}`);
                 } else {
-                    // Partner disconnected, put current user in queue
                     waitingUsers.push(socket);
                 }
             } else {
-                // No one waiting, add to queue if not already there
                 if (!waitingUsers.some(u => u.id === socket.id)) {
                     waitingUsers.push(socket);
                     console.log(`User ${socket.id} added to queue`);
@@ -46,16 +70,11 @@ module.exports = (io) => {
         });
 
         socket.on('next', () => {
-            // User wants to skip - notify partner
             const userInfo = userRooms.get(socket.id);
             if (userInfo && userInfo.type === '1on1') {
                 io.to(userInfo.partnerId).emit('partner_disconnected');
-
-                // Clean up room tracking
                 userRooms.delete(socket.id);
                 userRooms.delete(userInfo.partnerId);
-
-                // Leave room
                 socket.leave(userInfo.roomId);
             }
         });
@@ -94,20 +113,15 @@ module.exports = (io) => {
                 return;
             }
 
-            // Add user to room if not already there
             if (!room.users.includes(socket.id)) {
                 room.users.push(socket.id);
                 socket.join(roomId);
                 userRooms.set(socket.id, { roomId, type: 'group' });
-
-                // Notify existing users of new peer ONLY if it's a new join
                 socket.to(roomId).emit('user_joined', { userId: socket.id });
             } else {
-                // Ensure socket is in the room channel (re-join just in case)
                 socket.join(roomId);
             }
 
-            // Notify user of success and current participants
             socket.emit('room_joined', {
                 roomId,
                 users: room.users.filter(id => id !== socket.id),
@@ -123,17 +137,14 @@ module.exports = (io) => {
 
             const room = rooms.get(userInfo.roomId);
             if (room && room.admin === socket.id) {
-                // Admin is kicking someone
                 if (room.users.includes(userId)) {
                     io.to(userId).emit('kicked');
                     io.sockets.sockets.get(userId)?.leave(userInfo.roomId);
 
-                    // Remove from room state
                     room.users = room.users.filter(id => id !== userId);
                     userRooms.delete(userId);
                     room.muted.delete(userId);
 
-                    // Notify others
                     io.to(userInfo.roomId).emit('user_left', { userId });
                 }
             }
@@ -150,13 +161,11 @@ module.exports = (io) => {
                 } else {
                     room.muted.delete(userId);
                 }
-                // Broadcast mute state to everyone in room
                 io.to(userInfo.roomId).emit('user_muted', { userId, muted });
             }
         });
 
         socket.on('find_random_room', () => {
-            // Find a room that is not full
             let foundRoomId = null;
             for (const [id, room] of rooms) {
                 if (room.users.length < room.limit) {
@@ -175,7 +184,6 @@ module.exports = (io) => {
         // --- Common Signaling & Cleanup ---
 
         socket.on('signal', (data) => {
-            // Relay signaling data (offer, answer, ice-candidate) to the target
             io.to(data.target).emit('signal', {
                 sender: socket.id,
                 signal: data.signal
@@ -183,7 +191,6 @@ module.exports = (io) => {
         });
 
         socket.on('message', (data) => {
-            // Relay text messages
             socket.to(data.roomId).emit('message', {
                 sender: socket.id,
                 message: data.message,
@@ -194,17 +201,23 @@ module.exports = (io) => {
         socket.on('disconnect', () => {
             console.log('User disconnected:', socket.id);
 
-            // Remove from waiting queue if present
+            // Update Stats
+            stats.activeUsers = Math.max(0, stats.activeUsers - 1);
+            const startTime = stats.sessions.get(socket.id);
+            if (startTime) {
+                const duration = (Date.now() - startTime) / 1000; // seconds
+                stats.totalTimeSpent += duration;
+                stats.sessions.delete(socket.id);
+            }
+
             waitingUsers = waitingUsers.filter(user => user.id !== socket.id);
 
             const userInfo = userRooms.get(socket.id);
             if (userInfo) {
                 if (userInfo.type === '1on1') {
-                    // 1-on-1 cleanup
                     io.to(userInfo.partnerId).emit('partner_disconnected');
                     userRooms.delete(userInfo.partnerId);
                 } else if (userInfo.type === 'group') {
-                    // Group cleanup
                     const room = rooms.get(userInfo.roomId);
                     if (room) {
                         room.users = room.users.filter(id => id !== socket.id);
@@ -213,8 +226,6 @@ module.exports = (io) => {
                         if (room.users.length === 0) {
                             rooms.delete(userInfo.roomId);
                         } else {
-                            // If admin left, assign new admin (optional, for now just close or leave adminless)
-                            // Ideally, assign to next user
                             if (room.admin === socket.id) {
                                 room.admin = room.users[0];
                                 io.to(userInfo.roomId).emit('new_admin', { admin: room.admin });
