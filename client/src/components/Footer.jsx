@@ -21,7 +21,7 @@ const Footer = () => {
                     </div>
 
                     {/* Center: Compact Links (Horizontal) */}
-                    <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
+                    <div className="flex flex-wrap justify-center gap-x-12 gap-y-4">
                         <FooterLink to="/about">About</FooterLink>
                         <FooterLink to="/features">Features</FooterLink>
                         <FooterLink to="/support/safety">Safety</FooterLink>
