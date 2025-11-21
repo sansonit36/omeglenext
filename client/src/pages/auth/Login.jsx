@@ -1,7 +1,36 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Login = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const navigate = useNavigate();
+
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        setError('');
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                localStorage.setItem('token', data.token);
+                navigate('/');
+            } else {
+                setError(data.message);
+            }
+        } catch (err) {
+            setError('Login failed. Please try again.');
+        }
+    };
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-[#0f0f13] text-white p-4">
             <div className="w-full max-w-md space-y-8 bg-[#1a1a23] p-8 rounded-2xl border border-white/10">
@@ -9,7 +38,8 @@ const Login = () => {
                     <h2 className="text-3xl font-bold">Welcome Back</h2>
                     <p className="mt-2 text-gray-400">Sign in to your account</p>
                 </div>
-                <form className="mt-8 space-y-6" onSubmit={(e) => e.preventDefault()}>
+                {error && <p className="text-red-500 text-center text-sm">{error}</p>}
+                <form className="mt-8 space-y-6" onSubmit={handleLogin}>
                     <div className="space-y-4">
                         <div>
                             <label htmlFor="email" className="sr-only">Email address</label>
@@ -18,6 +48,8 @@ const Login = () => {
                                 name="email"
                                 type="email"
                                 required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 className="appearance-none relative block w-full px-3 py-3 border border-white/10 placeholder-gray-500 text-white bg-black/20 rounded-xl focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 placeholder="Email address"
                             />
@@ -29,6 +61,8 @@ const Login = () => {
                                 name="password"
                                 type="password"
                                 required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 className="appearance-none relative block w-full px-3 py-3 border border-white/10 placeholder-gray-500 text-white bg-black/20 rounded-xl focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 placeholder="Password"
                             />
