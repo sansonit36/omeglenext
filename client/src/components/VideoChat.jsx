@@ -207,12 +207,14 @@ const VideoChat = ({ socket, onLeave }) => {
         setPartnerId(null);
         partnerIdRef.current = null; // Clear ref immediately
         setRoomId(null);
+        pendingCandidates.current = []; // Clear pending candidates
 
         // Clear remote video
         if (remoteVideoRef.current) {
             remoteVideoRef.current.srcObject = null;
         }
 
+        console.log('handleNext: Reset complete, joining queue...');
         // Rejoin queue
         socket.emit('join_queue');
     }, [socket]); // Removed partnerId from dependency, now stable
@@ -341,7 +343,12 @@ const VideoChat = ({ socket, onLeave }) => {
             }
 
             const pc = peerConnectionRef.current;
-            if (!pc || pc.signalingState === 'closed') return;
+            if (!pc || pc.signalingState === 'closed') {
+                console.warn('Received signal but PeerConnection is null or closed');
+                return;
+            }
+
+            console.log(`Processing signal: ${signal.type}, Current Signaling State: ${pc.signalingState}`);
 
             try {
                 if (signal.type === 'offer') {
