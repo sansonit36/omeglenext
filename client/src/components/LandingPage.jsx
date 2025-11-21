@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Video, Users, Zap, Globe } from 'lucide-react';
+import { Video, Users, Zap, Globe, LogIn } from 'lucide-react';
 
 const LandingPage = ({ onEnter, onCreateRoom, onJoinRoom, onJoinRandom }) => {
     const [interest, setInterest] = useState('');
@@ -14,6 +14,14 @@ const LandingPage = ({ onEnter, onCreateRoom, onJoinRoom, onJoinRandom }) => {
                 <div className="absolute top-[-10%] left-[-10%] w-[60%] sm:w-[40%] h-[60%] sm:h-[40%] bg-indigo-600/20 rounded-full blur-[80px] sm:blur-[120px]"></div>
                 <div className="absolute bottom-[-10%] right-[-10%] w-[60%] sm:w-[40%] h-[60%] sm:h-[40%] bg-purple-600/20 rounded-full blur-[80px] sm:blur-[120px]"></div>
             </div>
+
+            {/* Logo Header */}
+            <nav className="absolute top-0 left-0 w-full p-4 sm:p-6 flex items-center justify-between z-10">
+                <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
+                    <span className="font-bold text-2xl tracking-tight text-white">Zingle</span>
+                </div>
+            </nav>
 
             <div className="max-w-4xl w-full text-center space-y-8 sm:space-y-12 animate-fade-in">
                 <div className="space-y-4 sm:space-y-6">
@@ -75,9 +83,10 @@ const LandingPage = ({ onEnter, onCreateRoom, onJoinRoom, onJoinRandom }) => {
                                 <button
                                     onClick={() => onJoinRoom(joinRoomId)}
                                     disabled={!joinRoomId.trim()}
-                                    className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-4 rounded-xl transition-colors disabled:opacity-50"
+                                    className="bg-white text-purple-600 hover:bg-purple-50 font-bold px-4 rounded-xl transition-colors disabled:opacity-50 flex items-center gap-2"
                                 >
                                     Join
+                                    <LogIn size={16} />
                                 </button>
                             </div>
                         </div>
@@ -92,7 +101,7 @@ const LandingPage = ({ onEnter, onCreateRoom, onJoinRoom, onJoinRandom }) => {
                         <div className="flex gap-3">
                             <button
                                 onClick={onJoinRandom}
-                                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                                className="flex-1 bg-white text-purple-600 hover:bg-purple-50 font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
                             >
                                 <Zap className="w-4 h-4" />
                                 Join Random
